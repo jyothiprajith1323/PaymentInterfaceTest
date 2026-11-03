@@ -1,0 +1,17 @@
+{
+  "name": "youpi-test-store",
+  "version": "1.0.0",
+  "description": "Custom test storefront for YouPI-PG local integration testing",
+  "main": "server.js",
+  "type": "commonjs",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.21.2"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

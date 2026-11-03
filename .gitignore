@@ -1,0 +1,25 @@
+# Dependencies
+node_modules/
+**/node_modules/
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+
+# Databases and secrets
+data/*.sqlite*
+youpi-pg/data/*.sqlite*
+youpi-pg/data/.secrets/
+.secrets/
+
+# Environment files
+.env
+.env.local
+.env.*.local
+youpi-pg/.env
+
+# OS / Editor files
+.DS_Store
+Thumbs.db
+.system_generated/

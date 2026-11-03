@@ -1,0 +1,1244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>YouPI-PG · Dual-Mode Live UPI Test Storefront</title>
+
+  <!-- ── YouPI Universal Gateway SDK ────────────────────────────────────── -->
+  <script
+    src="http://localhost:7000/youpi.js"
+    data-youpi-key="00000000-0000-0000-0000-000000000001"
+    data-merchant-id="00000000-0000-0000-0000-000000000001"
+    data-portal-url="http://localhost:7000"
+    data-api-url="http://localhost:6100"
+    data-name="YouPI Test Store"
+    data-theme-color="#3b82f6"
+  ></script>
+
+  <style>
+    /* ── High-Contrast Dark Theme (bg-neutral-950, border-neutral-800) ── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:           #09090b; /* neutral-950 */
+      --bg-card:      #121215;
+      --bg-card-sub:  #18181b; /* neutral-900 */
+      --border:       #27272a; /* neutral-800 */
+      --border-focus: #3b82f6;
+      --text:         #f4f4f5;
+      --text-muted:   #a1a1aa;
+      --text-dim:     #71717a;
+      --blue:         #3b82f6;
+      --blue-hover:   #2563eb;
+      --green:        #10b981;
+      --green-dark:   #064e3b;
+      --yellow:       #f59e0b;
+      --red:          #ef4444;
+      --purple:       #8b5cf6;
+      --font-mono:    ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ── Navigation / Header ────────────────────────────────────────────── */
+    header {
+      background: #09090b;
+      border-bottom: 1px solid var(--border);
+      padding: 14px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 50;
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .brand-badge {
+      width: 36px; height: 36px;
+      background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      font-size: 18px;
+      color: #fff;
+      box-shadow: 0 0 16px rgba(59,130,246,0.35);
+    }
+    .brand-title {
+      font-size: 16px;
+      font-weight: 700;
+      letter-spacing: -0.3px;
+    }
+    .brand-sub {
+      font-size: 12px;
+      color: var(--text-muted);
+      font-family: var(--font-mono);
+    }
+    .header-links {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+    }
+    .link-pill {
+      font-size: 12px;
+      color: var(--text-muted);
+      text-decoration: none;
+      padding: 6px 12px;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+      background: var(--bg-card);
+      transition: all .15s;
+      font-family: var(--font-mono);
+    }
+    .link-pill:hover {
+      color: var(--text);
+      border-color: var(--blue);
+    }
+    .health-pill {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      font-family: var(--font-mono);
+      padding: 6px 10px;
+      border-radius: 6px;
+      background: rgba(16, 185, 129, 0.1);
+      border: 1px solid rgba(16, 185, 129, 0.25);
+      color: var(--green);
+    }
+    .pulse-dot {
+      width: 8px; height: 8px; border-radius: 50%;
+      background: var(--green);
+      animation: pulse 1.5s infinite;
+    }
+    @keyframes pulse { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: .4; transform: scale(.85); } }
+
+    /* ── Main Layout (3-Column Grid) ────────────────────────────────────── */
+    main {
+      flex: 1;
+      padding: 24px;
+      display: grid;
+      grid-template-columns: 420px 1fr 440px;
+      gap: 20px;
+      max-width: 1720px;
+      margin: 0 auto;
+      width: 100%;
+    }
+
+    /* ── Base Card ──────────────────────────────────────────────────────── */
+    .card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+    .card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding-bottom: 12px;
+      border-bottom: 1px solid var(--border);
+    }
+    .card-title {
+      font-size: 14px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--text);
+    }
+    .card-subtitle {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+
+    /* ── VPA Config Banner / Input ──────────────────────────────────────── */
+    .vpa-config-box {
+      background: var(--bg-card-sub);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .vpa-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .vpa-label {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--blue);
+      text-transform: uppercase;
+      font-family: var(--font-mono);
+      letter-spacing: 0.5px;
+    }
+    .vpa-input-row {
+      display: flex;
+      gap: 8px;
+    }
+    .vpa-input {
+      flex: 1;
+      background: #09090b;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 8px 10px;
+      font-size: 13px;
+      font-family: var(--font-mono);
+      color: var(--text);
+      outline: none;
+    }
+    .vpa-input:focus { border-color: var(--blue); }
+    .btn-vpa-save {
+      background: var(--border);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 8px 14px;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all .15s;
+    }
+    .btn-vpa-save:hover {
+      background: var(--blue);
+      border-color: var(--blue);
+    }
+
+    /* ── Amount Input & Chips ───────────────────────────────────────────── */
+    .amount-box {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .amount-input-wrap {
+      display: flex;
+      align-items: center;
+      background: #09090b;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 8px 16px;
+      gap: 8px;
+      transition: border-color .15s;
+    }
+    .amount-input-wrap:focus-within { border-color: var(--blue); }
+    .currency-symbol {
+      font-size: 28px;
+      font-weight: 700;
+      color: var(--text-dim);
+    }
+    .amount-input {
+      background: transparent;
+      border: none;
+      font-size: 32px;
+      font-weight: 800;
+      color: var(--text);
+      outline: none;
+      width: 100%;
+      font-family: var(--font-mono);
+    }
+    .amount-chips {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .amount-chip {
+      background: var(--bg-card-sub);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 6px 14px;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-muted);
+      cursor: pointer;
+      transition: all .15s;
+      font-family: var(--font-mono);
+    }
+    .amount-chip:hover, .amount-chip.active {
+      background: var(--blue);
+      border-color: var(--blue);
+      color: #fff;
+    }
+
+    /* ── Customer Details Inputs ────────────────────────────────────────── */
+    .form-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .form-group.full { grid-column: 1 / -1; }
+    .form-label {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text-dim);
+      text-transform: uppercase;
+      font-family: var(--font-mono);
+    }
+    .form-input {
+      background: #09090b;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 8px 10px;
+      font-size: 13px;
+      color: var(--text);
+      outline: none;
+    }
+    .form-input:focus { border-color: var(--blue); }
+
+    /* ── Action Buttons ─────────────────────────────────────────────────── */
+    .btn-primary {
+      background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+      border: 1px solid #3b82f6;
+      color: #fff;
+      padding: 14px 20px;
+      border-radius: 8px;
+      font-size: 15px;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: all .15s;
+      box-shadow: 0 4px 14px rgba(59,130,246,0.3);
+    }
+    .btn-primary:hover {
+      background: #1d4ed8;
+      transform: translateY(-1px);
+    }
+    .btn-primary:disabled {
+      background: #27272a;
+      border-color: #27272a;
+      color: #71717a;
+      cursor: not-allowed;
+      box-shadow: none;
+      transform: none;
+    }
+
+    .btn-secondary {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+      padding: 10px 14px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      transition: all .15s;
+    }
+    .btn-secondary:hover {
+      border-color: var(--text);
+      color: var(--text);
+    }
+
+    /* ── Dual-Mode Verification Dock (Center Column) ────────────────────── */
+    .dock-container {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+    .mode-tabs {
+      display: flex;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 4px;
+      gap: 4px;
+    }
+    .mode-tab {
+      flex: 1;
+      padding: 10px 16px;
+      border-radius: 7px;
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text-muted);
+      background: transparent;
+      border: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: all .15s;
+    }
+    .mode-tab.active {
+      background: var(--bg-card-sub);
+      color: #fff;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+      border: 1px solid var(--border);
+    }
+    .mode-tab.active.sim { color: var(--blue); border-color: rgba(59,130,246,0.3); }
+    .mode-tab.active.real { color: var(--green); border-color: rgba(16,185,129,0.3); }
+
+    .mode-panel {
+      display: none;
+      flex-direction: column;
+      gap: 16px;
+    }
+    .mode-panel.active { display: flex; }
+
+    /* Mode A Cards */
+    .sim-card {
+      background: linear-gradient(180deg, rgba(59,130,246,0.06) 0%, rgba(18,18,21,1) 100%);
+      border: 1px solid rgba(59,130,246,0.25);
+    }
+    .sim-credit-btn {
+      background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+      border: 1px solid #3b82f6;
+      color: #fff;
+      padding: 16px 20px;
+      border-radius: 8px;
+      font-size: 15px;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      box-shadow: 0 4px 20px rgba(37,99,235,0.4);
+      transition: all .15s;
+    }
+    .sim-credit-btn:hover { background: #1e40af; transform: translateY(-1px); }
+
+    /* Mode B Cards */
+    .real-card {
+      background: linear-gradient(180deg, rgba(16,185,129,0.06) 0%, rgba(18,18,21,1) 100%);
+      border: 1px solid rgba(16,185,129,0.25);
+    }
+    .step-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .step-item {
+      display: flex;
+      gap: 12px;
+      align-items: flex-start;
+      background: var(--bg-card-sub);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 12px;
+      font-size: 13px;
+    }
+    .step-num {
+      width: 24px; height: 24px;
+      border-radius: 50%;
+      background: rgba(16,185,129,0.15);
+      border: 1px solid var(--green);
+      color: var(--green);
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      flex-shrink: 0;
+    }
+    .step-content { flex: 1; }
+    .step-title { font-weight: 600; color: var(--text); }
+    .step-desc { color: var(--text-muted); font-size: 12px; margin-top: 2px; }
+
+    .utr-submit-row {
+      display: flex;
+      gap: 8px;
+      margin-top: 10px;
+    }
+    .utr-input {
+      flex: 1;
+      background: #09090b;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 10px 12px;
+      font-family: var(--font-mono);
+      font-size: 14px;
+      color: var(--text);
+      outline: none;
+      letter-spacing: 1px;
+    }
+    .utr-input:focus { border-color: var(--green); }
+    .btn-utr-submit {
+      background: var(--green);
+      border: 1px solid var(--green);
+      color: #064e3b;
+      padding: 10px 18px;
+      border-radius: 6px;
+      font-size: 13px;
+      font-weight: 800;
+      cursor: pointer;
+      transition: all .15s;
+    }
+    .btn-utr-submit:hover { background: #059669; color: #fff; }
+
+    .code-block {
+      background: #000;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 10px 12px;
+      font-family: var(--font-mono);
+      font-size: 12px;
+      color: #38bdf8;
+      overflow-x: auto;
+      user-select: all;
+    }
+
+    /* ── Telemetry & Console (Right Column) ──────────────────────────────── */
+    .telemetry-column {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+    .console-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding-bottom: 10px;
+      border-bottom: 1px solid var(--border);
+    }
+    .console-title {
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+      font-family: var(--font-mono);
+      letter-spacing: 0.5px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .console-log {
+      flex: 1;
+      min-height: 280px;
+      max-height: 380px;
+      background: #000;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 12px;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .log-item {
+      padding: 8px 10px;
+      border-radius: 6px;
+      background: #09090b;
+      border-left: 3px solid var(--blue);
+      animation: fadeIn .18s;
+    }
+    .log-item.success { border-left-color: var(--green); }
+    .log-item.failed  { border-left-color: var(--red); }
+    .log-item.warning { border-left-color: var(--yellow); }
+    .log-item.webhook { border-left-color: var(--purple); }
+    .log-top {
+      display: flex;
+      justify-content: space-between;
+      color: var(--text-dim);
+      font-size: 10px;
+      margin-bottom: 4px;
+    }
+    .log-type {
+      font-weight: 700;
+      color: var(--text);
+    }
+    .log-body {
+      color: #e4e4e7;
+      word-break: break-all;
+      white-space: pre-wrap;
+    }
+
+    /* Webhook table */
+    .webhook-list {
+      max-height: 240px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .wh-item {
+      background: var(--bg-card-sub);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 8px 10px;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .wh-badge {
+      font-size: 10px;
+      font-weight: 700;
+      padding: 2px 6px;
+      border-radius: 4px;
+      background: rgba(139, 92, 246, 0.2);
+      border: 1px solid rgba(139, 92, 246, 0.4);
+      color: #c084fc;
+      width: fit-content;
+    }
+
+    /* ── Active Session Bar ─────────────────────────────────────────────── */
+    .active-session-bar {
+      background: var(--bg-card-sub);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 10px 14px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-family: var(--font-mono);
+      font-size: 12px;
+    }
+    .status-tag {
+      padding: 3px 8px;
+      border-radius: 4px;
+      font-weight: 700;
+      font-size: 11px;
+    }
+    .status-tag.active { background: rgba(59,130,246,0.15); color: #60a5fa; border: 1px solid #3b82f6; }
+    .status-tag.success { background: rgba(16,185,129,0.15); color: #34d399; border: 1px solid #10b981; }
+
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(-4px); } }
+
+    @media (max-width: 1280px) {
+      main { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ── Global Header ──────────────────────────────────────────────────── -->
+  <header>
+    <div class="brand">
+      <div class="brand-badge">₹</div>
+      <div>
+        <div class="brand-title">YouPI-PG · Dual-Mode Test Storefront</div>
+        <div class="brand-sub">Self-Hosted NPCI UPI Gateway Integration Hub</div>
+      </div>
+    </div>
+    <div class="header-links">
+      <div class="health-pill">
+        <div class="pulse-dot"></div>
+        <span id="gatewayStatusText">Gateway: Online</span>
+      </div>
+      <a class="link-pill" href="http://localhost:6001" target="_blank">🛡 Merchant Admin (:6001)</a>
+      <a class="link-pill" href="http://localhost:7000" target="_blank">💳 Checkout (:7000)</a>
+      <a class="link-pill" href="http://localhost:6100/health" target="_blank">🔌 API (:6100)</a>
+    </div>
+  </header>
+
+  <!-- ── Main 3-Column Dashboard ────────────────────────────────────────── -->
+  <main>
+
+    <!-- ── LEFT: Custom Payment Card ────────────────────────────────────── -->
+    <div class="card">
+      <div class="card-header">
+        <div>
+          <div class="card-title">💳 Payment Parameters</div>
+          <div class="card-subtitle">Scannable NPCI UPI QR & Amount</div>
+        </div>
+        <span class="brand-sub" id="orderIdBadge">ORD-INIT</span>
+      </div>
+
+      <!-- Receiving UPI VPA Configuration Box -->
+      <div class="vpa-config-box">
+        <div class="vpa-header">
+          <span class="vpa-label">Active Receiving UPI VPA</span>
+          <span style="font-size:10px; color:var(--green);" id="vpaSyncStatus">✓ Synced in DB</span>
+        </div>
+        <div class="vpa-input-row">
+          <input
+            type="text"
+            id="vpaInput"
+            class="vpa-input"
+            value="merchant@upi"
+            placeholder="e.g. yourname@okaxis or yourname@ybl"
+          />
+          <button class="btn-vpa-save" onclick="updateVpaConfig()">Save VPA</button>
+        </div>
+        <div style="font-size:11px; color:var(--text-dim);">
+          Payee: <strong style="color:var(--text);" id="payeeNameDisplay">YOUPI Demo Store</strong>
+          <span style="color:var(--text-dim);"> (Direct bank account routing)</span>
+        </div>
+      </div>
+
+      <!-- Custom INR Amount -->
+      <div class="amount-box">
+        <span class="form-label">Payment Amount (INR)</span>
+        <div class="amount-input-wrap">
+          <span class="currency-symbol">₹</span>
+          <input
+            type="number"
+            id="customAmount"
+            class="amount-input"
+            value="1.00"
+            min="1.00"
+            max="10000.00"
+            step="0.01"
+          />
+        </div>
+        <div class="amount-chips">
+          <button class="amount-chip active" onclick="setAmount('1.00')">₹1 (Test)</button>
+          <button class="amount-chip" onclick="setAmount('2.00')">₹2</button>
+          <button class="amount-chip" onclick="setAmount('10.00')">₹10</button>
+          <button class="amount-chip" onclick="setAmount('99.00')">₹99</button>
+          <button class="amount-chip" onclick="setAmount('499.00')">₹499</button>
+        </div>
+      </div>
+
+      <!-- Customer Test Info -->
+      <div class="form-grid">
+        <div class="form-group">
+          <label class="form-label">Customer Name</label>
+          <input type="text" id="custName" class="form-input" value="Test Customer" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Phone (WhatsApp OTP)</label>
+          <input type="tel" id="custPhone" class="form-input" value="9876543210" />
+        </div>
+        <div class="form-group full">
+          <label class="form-label">Email</label>
+          <input type="email" id="custEmail" class="form-input" value="payer@youpi.local" />
+        </div>
+      </div>
+
+      <!-- Primary Payment Button -->
+      <button class="btn-primary" id="launchCheckoutBtn" onclick="launchYoupiCheckout()">
+        <span>⚡ Launch YouPI Checkout Modal</span>
+      </button>
+
+      <!-- Declarative Secondary Button with [data-youpi-pay] -->
+      <button
+        class="btn-secondary"
+        id="declarativePayBtn"
+        data-youpi-pay
+        data-amount="1.00"
+        onclick="launchDeclarativePay(event)"
+      >
+        <span>🏷 Pay via [data-youpi-pay]</span>
+      </button>
+
+      <!-- Active Session Status Badge -->
+      <div class="active-session-bar" id="activeSessionBar" style="display:none;">
+        <div>
+          <span style="color:var(--text-dim);">Session:</span>
+          <strong id="activePaymentIdShort">...</strong>
+        </div>
+        <span class="status-tag active" id="activeSessionStatus">ACTIVE</span>
+      </div>
+    </div>
+
+    <!-- ── CENTER: Dual-Mode Payment Verification Dock ───────────────────── -->
+    <div class="dock-container">
+
+      <!-- Mode Selector Tabs -->
+      <div class="mode-tabs">
+        <button class="mode-tab active sim" id="tabModeA" onclick="switchMode('A')">
+          <span>🧪 MODE A — Simulated Test Payment</span>
+        </button>
+        <button class="mode-tab real" id="tabModeB" onclick="switchMode('B')">
+          <span>🟢 MODE B — Real Live UPI Transfer</span>
+        </button>
+      </div>
+
+      <!-- ── MODE A: Simulated Bank Observer ───────────────────────────── -->
+      <div class="mode-panel active" id="panelModeA">
+        <div class="card sim-card">
+          <div class="card-header">
+            <div>
+              <div class="card-title" style="color:var(--blue);">🧪 Mode A · Virtual Android Observer</div>
+              <div class="card-subtitle">Zero-Money instant settlement via signed observer notification</div>
+            </div>
+            <span class="link-pill" style="color:var(--blue); border-color:var(--blue);">SSE Stream</span>
+          </div>
+
+          <p style="font-size:13px; color:var(--text-muted); line-height:1.6;">
+            Dispatches an HMAC-SHA256 signed payment notification matching YouPI-PG's Android Observer driver.
+            The Attribution Engine matches the exact active order amount, assigns a synthetic 12-digit UTR, and triggers an instant green settlement animation in the modal.
+          </p>
+
+          <button class="sim-credit-btn" id="simCreditBtn" onclick="triggerSimulatedCredit()">
+            <span>⚡ Simulate Bank Credit Now</span>
+          </button>
+
+          <div style="background:var(--bg-card-sub); border:1px solid var(--border); border-radius:8px; padding:12px; font-size:12px; font-family:var(--font-mono); color:var(--text-muted);">
+            <div>• Target: <span id="simTargetDisplay" style="color:#fff;">Active Open Session</span></div>
+            <div>• Signature: <span style="color:var(--blue);">HMAC-SHA256 (Android Enrollment Key)</span></div>
+            <div>• Outcome: <span style="color:var(--green);">OBSERVED_SUCCESS → Webhook Fired</span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── MODE B: Real Live UPI Payment ─────────────────────────────── -->
+      <div class="mode-panel" id="panelModeB">
+        <div class="card real-card">
+          <div class="card-header">
+            <div>
+              <div class="card-title" style="color:var(--green);">🟢 Mode B · Real UPI Bank Transfer</div>
+              <div class="card-subtitle">Pay actual ₹1.00 via GPay, PhonePe, Paytm, or BHIM</div>
+            </div>
+            <span class="link-pill" style="color:var(--green); border-color:var(--green);">NPCI Live</span>
+          </div>
+
+          <div class="step-list">
+            <div class="step-item">
+              <div class="step-num">1</div>
+              <div class="step-content">
+                <div class="step-title">Configure Receiving VPA</div>
+                <div class="step-desc">Enter your real UPI ID (e.g. <code>yourname@okaxis</code>) on the left and click <strong>Save VPA</strong>.</div>
+              </div>
+            </div>
+
+            <div class="step-item">
+              <div class="step-num">2</div>
+              <div class="step-content">
+                <div class="step-title">Launch Checkout & Scan QR</div>
+                <div class="step-desc">Set amount to ₹1.00, click <strong>Launch Checkout</strong>, and scan the QR code using any UPI app on your phone.</div>
+              </div>
+            </div>
+
+            <div class="step-item">
+              <div class="step-num">3</div>
+              <div class="step-content">
+                <div class="step-title">Submit Real 12-Digit UTR (Instant Verification)</div>
+                <div class="step-desc">Copy the 12-digit UPI Transaction Reference (UTR / RRN) from your payment receipt and submit below:</div>
+                <div class="utr-submit-row">
+                  <input
+                    type="text"
+                    id="realUtrInput"
+                    class="utr-input"
+                    maxlength="12"
+                    placeholder="e.g. 430512345678"
+                  />
+                  <button class="btn-utr-submit" onclick="submitRealUtr()">Verify UTR</button>
+                </div>
+              </div>
+            </div>
+
+            <div class="step-item">
+              <div class="step-num">4</div>
+              <div class="step-content">
+                <div class="step-title">Automated Android App Observer (Optional Zero-Click)</div>
+                <div class="step-desc">Connect physical phone via USB/Wireless ADB to forward real bank SMS/notifications automatically:</div>
+                <div class="code-block" style="margin-top:6px;">adb reverse tcp:6100 tcp:6100</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Information & Guide Footer -->
+      <div class="card" style="font-size:12px; color:var(--text-muted); line-height:1.6;">
+        <strong style="color:var(--text);">💡 Settlement Architecture Note:</strong><br/>
+        In YouPI-PG, browser DOM events are client-side only. Real backend fulfillment relies on 
+        the server-to-server <code>POST /api/youpi-webhook</code> endpoint verified with 
+        <code>crypto.timingSafeEqual</code> against <code>coin_store_webhook_secret</code>.
+      </div>
+    </div>
+
+    <!-- ── RIGHT: Telemetry & Console Inspector ─────────────────────────── -->
+    <div class="telemetry-column">
+
+      <!-- DOM CustomEvents Console -->
+      <div class="card" style="flex:1;">
+        <div class="console-header">
+          <div class="console-title">
+            <span style="color:var(--blue);">📡</span>
+            Browser DOM Events (youpi:*)
+          </div>
+          <button onclick="clearConsole()" style="background:none; border:none; color:var(--text-dim); font-size:11px; cursor:pointer;">Clear</button>
+        </div>
+        <div class="console-log" id="domConsoleLog">
+          <div style="color:var(--text-dim); text-align:center; padding:20px;">
+            Awaiting payment events...<br/>
+            (Launch checkout to stream events)
+          </div>
+        </div>
+      </div>
+
+      <!-- Verified Webhook Inspector -->
+      <div class="card">
+        <div class="console-header">
+          <div class="console-title">
+            <span style="color:var(--purple);">🛡</span>
+            Verified Server Webhooks (HMAC-SHA256)
+          </div>
+          <span style="font-size:10px; color:var(--green);" id="whCount">0 delivered</span>
+        </div>
+        <div class="webhook-list" id="webhookList">
+          <div style="color:var(--text-dim); font-size:11px; text-align:center; padding:12px;">
+            No webhooks received yet.
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+  </main>
+
+  <!-- ── Frontend Logic ────────────────────────────────────────────────── -->
+  <script>
+    let currentActivePaymentId = null;
+    let currentActiveOrderId   = null;
+    let currentActiveAmount    = '1.00';
+
+    // ── 1. Amount selection & syncing ─────────────────────────────────────────
+    function setAmount(val) {
+      document.getElementById('customAmount').value = val;
+      document.querySelectorAll('.amount-chip').forEach(c => {
+        c.classList.toggle('active', c.textContent.includes(`₹${parseInt(val)}`));
+      });
+      syncDeclarativeBtn();
+    }
+
+    document.getElementById('customAmount').addEventListener('input', () => {
+      document.querySelectorAll('.amount-chip').forEach(c => c.classList.remove('active'));
+      syncDeclarativeBtn();
+    });
+
+    function syncDeclarativeBtn() {
+      const amt = document.getElementById('customAmount').value || '1.00';
+      document.getElementById('declarativePayBtn').setAttribute('data-amount', amt);
+    }
+
+    // ── 2. Mode Switching (A: Sim / B: Real) ───────────────────────────────────
+    function switchMode(mode) {
+      const tabA = document.getElementById('tabModeA');
+      const tabB = document.getElementById('tabModeB');
+      const pnlA = document.getElementById('panelModeA');
+      const pnlB = document.getElementById('panelModeB');
+
+      if (mode === 'A') {
+        tabA.classList.add('active');
+        tabB.classList.remove('active');
+        pnlA.classList.add('active');
+        pnlB.classList.remove('active');
+      } else {
+        tabB.classList.add('active');
+        tabA.classList.remove('active');
+        pnlB.classList.add('active');
+        pnlA.classList.remove('active');
+      }
+    }
+
+    // ── 3. VPA Config API ─────────────────────────────────────────────────────
+    async function loadVpaConfig() {
+      try {
+        const res = await fetch('/api/vpa');
+        const data = await res.json();
+        if (data.success) {
+          document.getElementById('vpaInput').value = data.upiId;
+          document.getElementById('payeeNameDisplay').textContent = data.payeeName;
+        }
+      } catch (err) {
+        console.error('Failed to load VPA:', err);
+      }
+    }
+
+    async function updateVpaConfig() {
+      const upiId = document.getElementById('vpaInput').value.trim();
+      const payeeName = document.getElementById('payeeNameDisplay').textContent;
+      const statusEl = document.getElementById('vpaSyncStatus');
+
+      statusEl.textContent = 'Saving...';
+      statusEl.style.color = 'var(--yellow)';
+
+      try {
+        const res = await fetch('/api/vpa', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ upiId, payeeName })
+        });
+        const data = await res.json();
+        if (res.ok) {
+          statusEl.textContent = '✓ Synced in DB';
+          statusEl.style.color = 'var(--green)';
+          logConsole('VPA_UPDATED', { upiId: data.upiId, payeeName: data.payeeName }, 'success');
+        } else {
+          statusEl.textContent = '❌ Failed';
+          statusEl.style.color = 'var(--red)';
+          alert(data.error || 'Failed to update VPA');
+        }
+      } catch (err) {
+        statusEl.textContent = '❌ Network Error';
+        statusEl.style.color = 'var(--red)';
+      }
+    }
+
+    // ── 4. Launch YouPI Checkout (Programmatic & Declarative) ──────────────────
+    async function launchYoupiCheckout() {
+      const amount = parseFloat(document.getElementById('customAmount').value);
+      if (!amount || amount <= 0) return alert('Please enter a valid amount');
+
+      const orderId = `ORD-${Date.now()}`;
+      document.getElementById('orderIdBadge').textContent = orderId;
+
+      const customer = {
+        name:  document.getElementById('custName').value.trim(),
+        phone: document.getElementById('custPhone').value.trim(),
+        email: document.getElementById('custEmail').value.trim()
+      };
+
+      const btn = document.getElementById('launchCheckoutBtn');
+      btn.disabled = true;
+      btn.innerHTML = '<span>⏳ Creating Session...</span>';
+
+      try {
+        const res = await fetch('/api/create-payment', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ amount: amount.toFixed(2), orderId, customer, method: 'UPI' })
+        });
+        const data = await res.json();
+
+        btn.disabled = false;
+        btn.innerHTML = '<span>⚡ Launch YouPI Checkout Modal</span>';
+
+        if (!res.ok || !data.checkoutUrl) {
+          logConsole('SESSION_ERROR', data, 'failed');
+          return alert(data.error || 'Failed to create payment session');
+        }
+
+        // Cache active session
+        currentActivePaymentId = data.paymentId;
+        currentActiveOrderId   = data.orderId;
+        currentActiveAmount    = data.amount;
+
+        // Update active session bar
+        const bar = document.getElementById('activeSessionBar');
+        bar.style.display = 'flex';
+        document.getElementById('activePaymentIdShort').textContent = `${data.paymentId.slice(0,8)}... (₹${data.amount})`;
+        document.getElementById('simTargetDisplay').textContent = `${data.paymentId} (₹${data.amount})`;
+
+        logConsole('SESSION_CREATED', {
+          paymentId: data.paymentId,
+          orderId: data.orderId,
+          amount: `₹${data.amount}`,
+          checkoutUrl: data.checkoutUrl
+        }, 'info');
+
+        // Launch modal via universal SDK
+        window.Youpi.pay({
+          checkoutUrl: data.checkoutUrl,
+          order_id:    data.orderId,
+          amount:      data.amount,
+          currency:    'INR',
+          customer:    customer,
+          handler: (result) => {
+            logConsole('PAYMENT_HANDLER_CALLED', result, 'success');
+          },
+          onClose: () => {
+            logConsole('CHECKOUT_MODAL_CLOSED', { orderId: data.orderId }, 'warning');
+          }
+        });
+
+      } catch (err) {
+        btn.disabled = false;
+        btn.innerHTML = '<span>⚡ Launch YouPI Checkout Modal</span>';
+        alert('Network error creating payment: ' + err.message);
+      }
+    }
+
+    function launchDeclarativePay(e) {
+      e.preventDefault();
+      e.stopImmediatePropagation();
+      launchYoupiCheckout();
+    }
+
+    // ── 5. MODE A: Trigger Simulated Credit ────────────────────────────────────
+    async function triggerSimulatedCredit() {
+      const btn = document.getElementById('simCreditBtn');
+      btn.disabled = true;
+      btn.innerHTML = '<span>⏳ Dispatched...</span>';
+
+      try {
+        const res = await fetch('/api/simulate-payment', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            paymentId: currentActivePaymentId,
+            orderId:   currentActiveOrderId,
+            amount:    currentActiveAmount
+          })
+        });
+        const data = await res.json();
+
+        btn.disabled = false;
+        btn.innerHTML = '<span>⚡ Simulate Bank Credit Now</span>';
+
+        if (res.ok) {
+          logConsole('OBSERVER_SIMULATED', {
+            utr: data.utr,
+            amount: `₹${data.amount}`,
+            orderId: data.orderId,
+            status: 'VERIFIED'
+          }, 'success');
+        } else {
+          logConsole('SIMULATION_ERROR', data, 'failed');
+          alert(data.error || 'Simulation error');
+        }
+      } catch (err) {
+        btn.disabled = false;
+        btn.innerHTML = '<span>⚡ Simulate Bank Credit Now</span>';
+        alert('Network error: ' + err.message);
+      }
+    }
+
+    // ── 6. MODE B: Submit Real 12-digit UTR ────────────────────────────────────
+    async function submitRealUtr() {
+      const utr = document.getElementById('realUtrInput').value.trim();
+      if (!/^\d{12}$/.test(utr)) {
+        return alert('Please enter a valid 12-digit numeric UTR / RRN from your UPI app receipt.');
+      }
+
+      try {
+        const res = await fetch('/api/submit-real-utr', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            utr,
+            paymentId: currentActivePaymentId,
+            orderId:   currentActiveOrderId,
+            amount:    currentActiveAmount
+          })
+        });
+        const data = await res.json();
+
+        if (res.ok) {
+          logConsole('REAL_UTR_SUBMITTED', { utr: data.utr, paymentId: data.paymentId }, 'success');
+          document.getElementById('realUtrInput').value = '';
+          alert(`✅ UTR ${utr} submitted! The gateway is matching it against your incoming bank credits.`);
+        } else {
+          logConsole('UTR_ERROR', data, 'failed');
+          alert(data.error || 'Failed to submit UTR');
+        }
+      } catch (err) {
+        alert('Network error: ' + err.message);
+      }
+    }
+
+    // ── 7. DOM CustomEvents Listeners ─────────────────────────────────────────
+    const YOUPI_EVENTS = [
+      'youpi:payment:success',
+      'youpi:payment:failed',
+      'youpi:payment:suspicious',
+      'youpi:payment:expired',
+      'youpi:payment:cancelled'
+    ];
+
+    YOUPI_EVENTS.forEach(evName => {
+      window.addEventListener(evName, (e) => {
+        const detail = e.detail || {};
+        const isSuccess = evName.includes('success');
+        const isFailed = evName.includes('failed');
+        const type = isSuccess ? 'success' : (isFailed ? 'failed' : 'warning');
+
+        logConsole(evName, detail, type);
+
+        if (isSuccess) {
+          const tag = document.getElementById('activeSessionStatus');
+          tag.className = 'status-tag success';
+          tag.textContent = 'SETTLED ✓';
+        }
+      });
+    });
+
+    // ── 8. Telemetry Console Logger ───────────────────────────────────────────
+    function logConsole(eventType, data, level = 'info') {
+      const log = document.getElementById('domConsoleLog');
+      const item = document.createElement('div');
+      item.className = `log-item ${level}`;
+
+      const time = new Date().toLocaleTimeString();
+      item.innerHTML = `
+        <div class="log-top">
+          <span class="log-type">${eventType}</span>
+          <span>${time}</span>
+        </div>
+        <div class="log-body">${typeof data === 'object' ? JSON.stringify(data, null, 2) : data}</div>
+      `;
+      log.prepend(item);
+    }
+
+    function clearConsole() {
+      document.getElementById('domConsoleLog').innerHTML = `
+        <div style="color:var(--text-dim); text-align:center; padding:20px;">Console cleared.</div>
+      `;
+    }
+
+    // ── 9. Verified Webhooks Poller ───────────────────────────────────────────
+    const seenWebhooks = new Set();
+    async function pollWebhooks() {
+      try {
+        const res = await fetch('/api/webhooks');
+        if (!res.ok) return;
+        const data = await res.json();
+        const list = data.webhooks || [];
+
+        document.getElementById('whCount').textContent = `${list.length} delivered`;
+
+        if (list.length > 0) {
+          const container = document.getElementById('webhookList');
+          list.forEach(wh => {
+            const key = `${wh.orderId}-${wh.timestamp}-${wh.event}`;
+            if (!seenWebhooks.has(key)) {
+              seenWebhooks.add(key);
+              logConsole(`WEBHOOK:${wh.event}`, wh, 'webhook');
+
+              const div = document.createElement('div');
+              div.className = 'wh-item';
+              div.innerHTML = `
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                  <span class="wh-badge">${wh.event}</span>
+                  <span style="color:var(--text-dim); font-size:10px;">${new Date(wh.timestamp).toLocaleTimeString()}</span>
+                </div>
+                <div>Order: <strong style="color:#fff;">${wh.orderId}</strong> | UTR: <code>${wh.utr || 'N/A'}</code></div>
+                <div style="color:var(--green); font-size:10px;">HMAC-SHA256: Signature Verified ✓</div>
+              `;
+              if (container.children.length === 1 && container.children[0].textContent.includes('No webhooks')) {
+                container.innerHTML = '';
+              }
+              container.prepend(div);
+            }
+          });
+        }
+      } catch (err) {}
+    }
+
+    setInterval(pollWebhooks, 2500);
+
+    // Initial boot
+    loadVpaConfig();
+    pollWebhooks();
+  </script>
+</body>
+</html>
