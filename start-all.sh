@@ -24,6 +24,7 @@ echo "   Logs → $LOG_DIR/youpi-pg.log"
 cd "$YOUPI_DIR"
 nohup npm run dev > "$LOG_DIR/youpi-pg.log" 2>&1 &
 YOUPI_PID=$!
+disown -h $YOUPI_PID
 echo "   PID: $YOUPI_PID"
 echo "$YOUPI_PID" > "$LOG_DIR/youpi-pg.pid"
 
@@ -46,6 +47,7 @@ echo "   Logs → $LOG_DIR/store.log"
 cd "$STORE_DIR"
 nohup node server.js > "$LOG_DIR/store.log" 2>&1 &
 STORE_PID=$!
+disown -h $STORE_PID
 echo "   PID: $STORE_PID"
 echo "$STORE_PID" > "$LOG_DIR/store.pid"
 
