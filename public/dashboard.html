@@ -1,0 +1,2383 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CraftLanee Pay · All-in-One Merchant Dashboard & Checkout Studio</title>
+  <script src="/youpi.js"></script>
+  <style>
+    :root {
+      --bg: #0a0a0a;
+      --card-bg: #141414;
+      --card-header: #18181b;
+      --border: #262626;
+      --border-hover: #3f3f46;
+      --emerald: #10b981;
+      --emerald-glow: rgba(16, 185, 129, 0.2);
+      --amber: #f59e0b;
+      --amber-glow: rgba(245, 158, 11, 0.2);
+      --sky: #0ea5e9;
+      --purple: #8b5cf6;
+      --red: #ef4444;
+      --text: #f4f4f5;
+      --text-muted: #a1a1aa;
+      --text-dim: #71717a;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow-x: hidden;
+    }
+    .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; }
+
+    /* Top Navigation Header */
+    header {
+      background: #111111;
+      border-bottom: 1px solid var(--border);
+      padding: 14px 28px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .brand-wrap {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .brand-logo {
+      width: 36px;
+      height: 36px;
+      background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+      border-radius: 9px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      font-size: 19px;
+      box-shadow: 0 0 16px var(--emerald-glow);
+    }
+    .brand-info h1 {
+      font-size: 16px;
+      font-weight: 700;
+      letter-spacing: 0.2px;
+    }
+    .brand-info p {
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+    .top-telemetry {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: #18181b;
+      border: 1px solid var(--border);
+      padding: 5px 12px;
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: 600;
+    }
+    .status-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--emerald);
+      box-shadow: 0 0 8px var(--emerald);
+      animation: pulseDot 2s infinite;
+    }
+    @keyframes pulseDot {
+      0% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.6; transform: scale(1.15); }
+      100% { opacity: 1; transform: scale(1); }
+    }
+
+    /* Container */
+    main {
+      max-width: 1400px;
+      width: 100%;
+      margin: 0 auto;
+      padding: 24px 28px 48px;
+      flex: 1;
+    }
+
+    /* KPI Strip */
+    .kpi-strip {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+    .kpi-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 18px 20px;
+      position: relative;
+      overflow: hidden;
+      transition: border-color 0.2s, transform 0.2s;
+    }
+    .kpi-card:hover {
+      border-color: var(--border-hover);
+      transform: translateY(-1px);
+    }
+    .kpi-title {
+      font-size: 11px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      font-weight: 600;
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .kpi-value {
+      font-size: 28px;
+      font-weight: 800;
+      color: #ffffff;
+      letter-spacing: -0.5px;
+    }
+    .kpi-sub {
+      font-size: 11px;
+      color: var(--text-dim);
+      margin-top: 4px;
+    }
+
+    /* Tabs Bar */
+    .tab-bar {
+      display: flex;
+      gap: 6px;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 24px;
+      overflow-x: auto;
+      padding-bottom: 2px;
+    }
+    .tab-btn {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      padding: 10px 16px;
+      border-radius: 8px 8px 0 0;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.2s;
+      border-bottom: 2px solid transparent;
+      white-space: nowrap;
+    }
+    .tab-btn:hover {
+      color: #ffffff;
+      background: #18181b;
+    }
+    .tab-btn.active {
+      color: #ffffff;
+      border-bottom-color: var(--emerald);
+      background: #161616;
+    }
+
+    /* Bento Cards */
+    .bento-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      overflow: hidden;
+      margin-bottom: 20px;
+    }
+    .card-head {
+      padding: 16px 20px;
+      background: var(--card-header);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    .card-head h2 {
+      font-size: 14px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .card-body {
+      padding: 20px;
+    }
+
+    /* Buttons */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      padding: 8px 14px;
+      border-radius: 7px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      border: 1px solid transparent;
+      transition: all 0.15s;
+    }
+    .btn-primary { background: var(--emerald); color: #000000; }
+    .btn-primary:hover { background: #059669; }
+    .btn-secondary { background: #27272a; border-color: #3f3f46; color: #ffffff; }
+    .btn-secondary:hover { background: #3f3f46; }
+    .btn-accent { background: #0284c7; color: #ffffff; }
+    .btn-accent:hover { background: #0369a1; }
+    .btn-purple { background: #7c3aed; color: #ffffff; }
+    .btn-purple:hover { background: #6d28d9; }
+    .btn-danger { background: rgba(239, 68, 68, 0.15); border-color: var(--red); color: #f87171; }
+    .btn-danger:hover { background: rgba(239, 68, 68, 0.3); }
+    .btn-sm { padding: 4px 8px; font-size: 11px; }
+
+    /* Status Pills */
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 3px 8px;
+      border-radius: 20px;
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .pill-success { background: rgba(16, 185, 129, 0.15); color: #34d399; border: 1px solid #059669; }
+    .pill-amber { background: rgba(245, 158, 11, 0.15); color: #fbbf24; border: 1px solid #d97706; }
+    .pill-sky { background: rgba(14, 165, 233, 0.15); color: #38bdf8; border: 1px solid #0284c7; }
+    .pill-danger { background: rgba(239, 68, 68, 0.15); color: #f87171; border: 1px solid #dc2626; }
+    .pill-dim { background: #27272a; color: #a1a1aa; border: 1px solid #3f3f46; }
+
+    /* Tables */
+    .table-wrap { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; text-align: left; font-size: 12px; }
+    th {
+      padding: 10px 14px;
+      background: #18181b;
+      color: var(--text-muted);
+      font-weight: 600;
+      border-bottom: 1px solid var(--border);
+      text-transform: uppercase;
+      font-size: 10px;
+      letter-spacing: 0.5px;
+    }
+    td { padding: 12px 14px; border-bottom: 1px solid #1f1f23; color: #e4e4e7; vertical-align: middle; }
+    tr:hover td { background: #17171a; }
+
+    /* Forms */
+    .form-group { margin-bottom: 16px; }
+    .form-label { display: block; font-size: 12px; font-weight: 600; color: var(--text-muted); margin-bottom: 6px; }
+    .form-input {
+      width: 100%;
+      background: #09090b;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 9px 12px;
+      color: #ffffff;
+      font-size: 13px;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    .form-input:focus { border-color: var(--emerald); }
+
+    /* Switch */
+    .switch { position: relative; display: inline-block; width: 44px; height: 24px; }
+    .switch input { opacity: 0; width: 0; height: 0; }
+    .slider {
+      position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0;
+      background-color: #27272a; border: 1px solid #3f3f46; transition: .3s; border-radius: 24px;
+    }
+    .slider:before {
+      position: absolute; content: ""; height: 16px; width: 16px; left: 3px; bottom: 3px;
+      background-color: white; transition: .3s; border-radius: 50%;
+    }
+    input:checked + .slider { background-color: var(--emerald); border-color: var(--emerald); }
+    input:checked + .slider:before { transform: translateX(20px); }
+
+    /* Module Toggle Card */
+    .module-card {
+      background: #141414;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      margin-bottom: 18px;
+      overflow: hidden;
+      transition: border-color 0.2s;
+    }
+    .module-card.enabled {
+      border-color: #059669;
+    }
+    .module-head {
+      padding: 16px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      background: #18181b;
+      cursor: pointer;
+    }
+    .module-info {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+    .module-icon {
+      font-size: 24px;
+      width: 42px;
+      height: 42px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 10px;
+      background: #27272a;
+    }
+    .module-card.enabled .module-icon {
+      background: rgba(16, 185, 129, 0.15);
+      color: #34d399;
+    }
+    .module-drawer {
+      padding: 20px;
+      border-top: 1px solid var(--border);
+      display: none;
+      background: #111111;
+    }
+    .module-drawer.open {
+      display: block;
+      animation: fadeInDrawer 0.25s ease-out;
+    }
+    @keyframes fadeInDrawer {
+      from { opacity: 0; transform: translateY(-6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Checklist Box */
+    .checklist-box {
+      background: #18181b;
+      border: 1px solid #27272a;
+      border-radius: 10px;
+      padding: 16px;
+      margin-bottom: 20px;
+    }
+    .checklist-title {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--sky);
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .checklist-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      font-size: 12px;
+      color: #d4d4d8;
+      margin-bottom: 8px;
+      line-height: 1.4;
+    }
+    .checklist-item:last-child { margin-bottom: 0; }
+    .checklist-item .num {
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: #27272a;
+      color: #38bdf8;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 10px;
+      font-weight: 700;
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+
+    /* Live Checkout Studio Layout */
+    .studio-grid {
+      display: grid;
+      grid-template-columns: 1fr 420px;
+      gap: 24px;
+      align-items: flex-start;
+    }
+    @media (max-width: 960px) {
+      .studio-grid { grid-template-columns: 1fr; }
+    }
+    .preview-sticky {
+      position: sticky;
+      top: 90px;
+      background: #09090b;
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    /* Live Preview Card styling */
+    .preview-modal {
+      width: 100%;
+      max-width: 360px;
+      border: 1px solid #27272a;
+      border-radius: 16px;
+      background: #141414;
+      padding: 22px;
+      box-shadow: 0 16px 36px rgba(0,0,0,0.6);
+      transition: all 0.2s ease;
+    }
+
+    /* Theme Presets */
+    .theme-presets {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+    .theme-preset-btn {
+      background: #18181b;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 10px;
+      text-align: center;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      color: #e4e4e7;
+      transition: all 0.15s;
+    }
+    .theme-preset-btn:hover {
+      border-color: var(--emerald);
+      transform: translateY(-1px);
+    }
+
+    /* Toast */
+    #toast {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      background: #18181b;
+      border: 1px solid var(--border);
+      padding: 12px 20px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+      z-index: 10000;
+      transform: translateY(100px);
+      opacity: 0;
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    #toast.show {
+      transform: translateY(0);
+      opacity: 1;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Navigation Header -->
+  <header>
+    <div class="brand-wrap">
+      <div class="brand-logo">⚡</div>
+      <div class="brand-info">
+        <h1>CraftLanee Pay</h1>
+        <p>Production UPI Payment Observation Platform</p>
+      </div>
+    </div>
+    <div class="top-telemetry">
+      <button class="btn btn-secondary btn-sm" onclick="runSelfTestSuite()" title="Run 10-Point Automated Test Suite" style="gap:6px; font-weight:600;">
+        <span style="color:var(--emerald);">▶</span> Run Self-Test
+      </button>
+      <div class="status-badge">
+        <span class="status-dot"></span>
+        <span class="mono" style="color:#34d399;">ONLINE :7000</span>
+      </div>
+      <div class="status-badge mono" style="color:var(--text-muted);">WAL MODE</div>
+      <div class="status-badge mono" id="clock-display" style="color:var(--text-dim);">--:--:--</div>
+    </div>
+  </header>
+
+  <main>
+    <!-- KPI Strip -->
+    <section class="kpi-strip">
+      <div class="kpi-card">
+        <div class="kpi-title">
+          <span>Total Settled Volume</span>
+          <span>₹</span>
+        </div>
+        <div class="kpi-value mono" id="kpi-volume">₹0.00</div>
+        <div class="kpi-sub" id="kpi-volume-sub">0 total transactions</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-title">
+          <span>Active Till Sessions</span>
+          <span style="color:var(--sky);">● LIVE</span>
+        </div>
+        <div class="kpi-value mono" id="kpi-active" style="color:var(--sky);">0</div>
+        <div class="kpi-sub">Concurrent customer slots</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-title">
+          <span>Settled Orders</span>
+          <span style="color:var(--emerald);">✓ 100%</span>
+        </div>
+        <div class="kpi-value mono" id="kpi-settled" style="color:var(--emerald);">0</div>
+        <div class="kpi-sub">Verified & webhook delivered</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-title">
+          <span>Avg Verification Latency</span>
+          <span style="color:var(--amber);">⚡</span>
+        </div>
+        <div class="kpi-value mono" id="kpi-latency" style="color:var(--amber);">780ms</div>
+        <div class="kpi-sub">Real-time observer & ledger match</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-title">
+          <span>Observer Phone Health</span>
+          <span id="kpi-obs-dot" style="display:inline-block; width:8px; height:8px; border-radius:50%; background:var(--emerald);"></span>
+        </div>
+        <div class="kpi-value mono" id="kpi-obs-status" style="font-size:18px; line-height:34px;">ONLINE</div>
+        <div class="kpi-sub" id="kpi-obs-sub">Pixel 7 Pro · ADB Loopback</div>
+      </div>
+    </section>
+
+    <!-- Tab Navigation -->
+    <nav class="tab-bar">
+      <button class="tab-btn active" onclick="switchTab('tab-orders')">
+        <span>⚡ Command Center & Till</span>
+      </button>
+      <button class="tab-btn" onclick="switchTab('tab-modules')">
+        <span>🔌 Plug-and-Play Modules</span>
+      </button>
+      <button class="tab-btn" onclick="switchTab('tab-studio')">
+        <span>🎨 Live Checkout Studio</span>
+      </button>
+      <button class="tab-btn" onclick="switchTab('tab-concurrency')">
+        <span>🔄 UPI VPAs & Concurrency</span>
+      </button>
+      <button class="tab-btn" onclick="switchTab('tab-security')">
+        <span>🔑 API Keys & Webhooks</span>
+      </button>
+      <button class="tab-btn" onclick="switchTab('tab-sandbox')">
+        <span>🧪 Live Checkout Sandbox</span>
+      </button>
+      <button class="tab-btn" onclick="switchTab('tab-integration')">
+        <span>💻 Integration SDK & Docs</span>
+      </button>
+    </nav>
+
+    <!-- ── TAB 1: COMMAND CENTER & TILL QUEUE ─────────────────────────────────── -->
+    <section id="tab-orders" class="tab-content">
+      <div class="bento-card">
+        <div class="card-head">
+          <h2><span>⚡</span> Real-Time Payment Stream</h2>
+          <div style="display:flex; gap:8px;">
+            <button class="btn btn-secondary btn-sm" onclick="fetchDashboardData()">↻ Refresh</button>
+            <button class="btn btn-primary btn-sm" onclick="switchTab('tab-sandbox')">+ New Payment</button>
+          </div>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Order ID</th>
+                <th>Amount (Req / Locked)</th>
+                <th>Assigned VPA</th>
+                <th>Status</th>
+                <th>UTR / Reference</th>
+                <th>Verification Engine</th>
+                <th>Created</th>
+                <th>Till Actions</th>
+              </tr>
+            </thead>
+            <tbody id="orders-tbody">
+              <tr><td colspan="8" style="text-align:center; padding:20px; color:var(--text-muted);">Loading real-time orders...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Late SMS Buffer / Unclaimed Bank Credits Table -->
+      <div class="bento-card">
+        <div class="card-head">
+          <h2><span>📥</span> Late SMS Buffer & Unclaimed Bank Credits (Engine 3)</h2>
+          <span class="pill pill-amber" id="unclaimed-count-pill">0 Unclaimed</span>
+        </div>
+        <div class="card-body" style="padding-top:12px; padding-bottom:12px;">
+          <p style="font-size:12px; color:var(--text-muted); margin-bottom:12px;">
+            Bank SMS or App notifications that arrived after a checkout window expired or without an active session are safely held in this buffer. You can link any incoming credit to an order in 1 click.
+          </p>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>UTR / Bank Ref</th>
+                  <th>Amount</th>
+                  <th>Source</th>
+                  <th>Received Timestamp</th>
+                  <th>1-Click Action</th>
+                </tr>
+              </thead>
+              <tbody id="unclaimed-tbody">
+                <tr><td colspan="5" style="text-align:center; padding:16px; color:var(--text-muted);">No unclaimed bank credits in buffer.</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- Headless Bank Statement Ingestion Stream (Module 2 Feed) -->
+      <div class="bento-card">
+        <div class="card-head">
+          <h2><span>🏦</span> Bank Statement Ledger Stream (Module 2 Feed)</h2>
+          <button class="btn btn-accent btn-sm" onclick="triggerBankSyncNow()">⚡ Sync Statement Now</button>
+        </div>
+        <div class="card-body" style="padding-top:12px; padding-bottom:12px;">
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>UTR</th>
+                  <th>Amount</th>
+                  <th>Payer VPA</th>
+                  <th>Raw Description</th>
+                  <th>Synced At</th>
+                  <th>Matched Order ID</th>
+                </tr>
+              </thead>
+              <tbody id="bank-ledger-tbody">
+                <tr><td colspan="6" style="text-align:center; padding:16px; color:var(--text-muted);">No statement credits synced yet.</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── TAB 2: PLUG-AND-PLAY FEATURE TOGGLE HUB ───────────────────────────── -->
+    <section id="tab-modules" class="tab-content" style="display:none;">
+      <div class="bento-card">
+        <div class="card-head">
+          <h2><span>🔌</span> Plug-and-Play Payment & Verification Modules Hub</h2>
+          <span class="pill pill-success">Instant Hot-Reload (No Server Restart)</span>
+        </div>
+        <div class="card-body">
+          <p style="font-size:12px; color:var(--text-muted); margin-bottom:20px;">
+            Toggle any payment or verification engine on or off instantly. When toggled ON, the setup checklist and credentials drawer expand automatically. When toggled OFF, that option is immediately hidden from customer checkout modals and any background polling worker is halted.
+          </p>
+
+          <!-- MODULE 1: UPI Intent Deep-Linking & Return Callback -->
+          <div class="module-card" id="modcard-upi_intent">
+            <div class="module-head" onclick="toggleModuleDrawer('upi_intent')">
+              <div class="module-info">
+                <div class="module-icon">📱</div>
+                <div>
+                  <div style="font-size:14px; font-weight:700;">Module 1: UPI Intent Deep-Linking & Return Callback Engine</div>
+                  <div style="font-size:11px; color:var(--text-muted); margin-top:2px;">1-tap GPay, PhonePe, Paytm, BHIM deep-linking with auto-return callback handling</div>
+                </div>
+              </div>
+              <div style="display:flex; align-items:center; gap:14px;" onclick="event.stopPropagation();">
+                <span class="pill" id="modstatus-upi_intent">ACTIVE</span>
+                <label class="switch">
+                  <input type="checkbox" id="modswitch-upi_intent" onchange="handleModuleToggle('upi_intent', this.checked)">
+                  <span class="slider"></span>
+                </label>
+              </div>
+            </div>
+            <div class="module-drawer" id="moddrawer-upi_intent">
+              <div class="checklist-box">
+                <div class="checklist-title"><span>📋</span> Step-by-Step Setup Checklist (Things To Do)</div>
+                <div class="checklist-item"><span class="num">1</span><span>Verify your primary receiving VPA ID is registered as a merchant/business account to accept intent traffic.</span></div>
+                <div class="checklist-item"><span class="num">2</span><span>Set your 4-digit Merchant Category Code (MCC). Use <code class="mono" style="color:#38bdf8;">0000</code> for general services or your bank assigned MCC.</span></div>
+                <div class="checklist-item"><span class="num">3</span><span>Configure your public or local Return Callback URL where UPI apps redirect back after payment.</span></div>
+                <div class="checklist-item"><span class="num">4</span><span>Select which UPI App buttons to render in the customer modal (`GPay`, `PhonePe`, `Paytm`, `BHIM`, `CRED`).</span></div>
+              </div>
+
+              <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(280px, 1fr)); gap:16px; margin-bottom:16px;">
+                <div class="form-group">
+                  <label class="form-label">Merchant Category Code (MCC)</label>
+                  <input type="text" id="cfg-upi_intent-merchant_mcc" class="form-input mono" value="0000" maxlength="4" />
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Callback Return URL</label>
+                  <input type="url" id="cfg-upi_intent-callback_base_url" class="form-input mono" value="http://localhost:7000/api/v1/intent/callback" />
+                </div>
+              </div>
+
+              <div class="form-group" style="margin-bottom:16px;">
+                <label class="form-label">Enabled UPI App Buttons</label>
+                <div style="display:flex; gap:16px; flex-wrap:wrap; margin-top:6px;">
+                  <label style="font-size:12px; display:flex; align-items:center; gap:6px; cursor:pointer;"><input type="checkbox" id="cfg-upi_intent-enable_gpay" checked> Google Pay (GPay)</label>
+                  <label style="font-size:12px; display:flex; align-items:center; gap:6px; cursor:pointer;"><input type="checkbox" id="cfg-upi_intent-enable_phonepe" checked> PhonePe</label>
+                  <label style="font-size:12px; display:flex; align-items:center; gap:6px; cursor:pointer;"><input type="checkbox" id="cfg-upi_intent-enable_paytm" checked> Paytm</label>
+                  <label style="font-size:12px; display:flex; align-items:center; gap:6px; cursor:pointer;"><input type="checkbox" id="cfg-upi_intent-enable_bhim" checked> BHIM UPI</label>
+                  <label style="font-size:12px; display:flex; align-items:center; gap:6px; cursor:pointer;"><input type="checkbox" id="cfg-upi_intent-enable_cred" checked> CRED UPI</label>
+                </div>
+              </div>
+
+              <div class="form-group" style="margin-bottom:18px;">
+                <label style="font-size:12px; display:flex; align-items:center; gap:6px; cursor:pointer;">
+                  <input type="checkbox" id="cfg-upi_intent-auto_launch_intent">
+                  <span>Auto-launch generic UPI intent immediately on mobile browsers without showing QR</span>
+                </label>
+              </div>
+
+              <div style="display:flex; gap:10px;">
+                <button class="btn btn-primary" onclick="saveModuleConfig('upi_intent')">Save & Activate Module</button>
+                <button class="btn btn-secondary" onclick="testModule('upi_intent')">Test Module</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- MODULE 2: Headless Bank Statement Scraper / API Poller -->
+          <div class="module-card" id="modcard-bank_scraper">
+            <div class="module-head" onclick="toggleModuleDrawer('bank_scraper')">
+              <div class="module-info">
+                <div class="module-icon">🏦</div>
+                <div>
+                  <div style="font-size:14px; font-weight:700;">Module 2: Headless Bank Statement Scraper / Corporate Banking API Poller</div>
+                  <div style="font-size:11px; color:var(--text-muted); margin-top:2px;">Eliminates phone SMS dependency by pulling bank credits directly into the SQLite bank ledger</div>
+                </div>
+              </div>
+              <div style="display:flex; align-items:center; gap:14px;" onclick="event.stopPropagation();">
+                <span class="pill" id="modstatus-bank_scraper">ACTIVE</span>
+                <label class="switch">
+                  <input type="checkbox" id="modswitch-bank_scraper" onchange="handleModuleToggle('bank_scraper', this.checked)">
+                  <span class="slider"></span>
+                </label>
+              </div>
+            </div>
+            <div class="module-drawer" id="moddrawer-bank_scraper">
+              <div class="checklist-box">
+                <div class="checklist-title"><span>📋</span> Step-by-Step Setup Checklist (Things To Do)</div>
+                <div class="checklist-item"><span class="num">1</span><span>Choose your ingestion sub-mode (REST Banking API Poller, Headless Scraper, or Webhook Ingestion).</span></div>
+                <div class="checklist-item"><span class="num">2</span><span>Enter the bank or scraper API endpoint URL (default is the built-in mock statement endpoint for local testing).</span></div>
+                <div class="checklist-item"><span class="num">3</span><span>Configure your read-only API Key and Secret / Bearer token.</span></div>
+                <div class="checklist-item"><span class="num">4</span><span>Specify JSON path keys for UTR (`utr`), Amount (`amount`), and Status (`status`) fields.</span></div>
+                <div class="checklist-item"><span class="num">5</span><span>Click "Test Bank Connection & Sync Ledger Now" to verify incoming credit matching.</span></div>
+              </div>
+
+              <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(260px, 1fr)); gap:16px; margin-bottom:16px;">
+                <div class="form-group">
+                  <label class="form-label">Provider Name / Mode</label>
+                  <select id="cfg-bank_scraper-provider_name" class="form-input">
+                    <option value="REST Banking API Poller">REST Banking API Poller (ICICI / Axis / HDFC / FinTech)</option>
+                    <option value="Headless Statement Scraper">Headless Statement Scraper Worker</option>
+                    <option value="CSV/JSON Webhook Ingestion">CSV / JSON Statement Webhook Ingestion</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Statement API Endpoint URL</label>
+                  <input type="url" id="cfg-bank_scraper-api_endpoint_url" class="form-input mono" value="http://localhost:7000/api/v1/mock/bank-statement" />
+                </div>
+                <div class="form-group">
+                  <label class="form-label">API Key / Client ID</label>
+                  <input type="text" id="cfg-bank_scraper-api_key" class="form-input mono" value="cl_bank_live_key" />
+                </div>
+                <div class="form-group">
+                  <label class="form-label">API Secret / Bearer Token</label>
+                  <div style="display:flex; gap:8px;">
+                    <input type="password" id="cfg-bank_scraper-api_secret" class="form-input mono" value="cl_bank_sec_demo" />
+                    <button class="btn btn-secondary" type="button" onclick="toggleReveal('cfg-bank_scraper-api_secret')">👁</button>
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Background Polling Interval (Seconds)</label>
+                  <input type="number" id="cfg-bank_scraper-poll_interval_seconds" class="form-input" value="10" min="2" max="300" />
+                </div>
+                <div class="form-group">
+                  <label class="form-label">JSON UTR Field Path</label>
+                  <input type="text" id="cfg-bank_scraper-utr_field" class="form-input mono" value="utr" />
+                </div>
+                <div class="form-group">
+                  <label class="form-label">JSON Amount Field Path</label>
+                  <input type="text" id="cfg-bank_scraper-amount_field" class="form-input mono" value="amount" />
+                </div>
+                <div class="form-group">
+                  <label class="form-label">JSON Status Field Path</label>
+                  <input type="text" id="cfg-bank_scraper-status_field" class="form-input mono" value="status" />
+                </div>
+              </div>
+
+              <div style="display:flex; gap:10px;">
+                <button class="btn btn-primary" onclick="saveModuleConfig('bank_scraper')">Save & Activate Module</button>
+                <button class="btn btn-accent" onclick="testModule('bank_scraper')">Test Bank Connection & Sync Ledger Now</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- MODULE 3: Customer 12-Digit UTR Lookup ("I Have Paid") -->
+          <div class="module-card" id="modcard-manual_utr">
+            <div class="module-head" onclick="toggleModuleDrawer('manual_utr')">
+              <div class="module-info">
+                <div class="module-icon">🔢</div>
+                <div>
+                  <div style="font-size:14px; font-weight:700;">Module 3: Instant Customer-Initiated Verification ("I Have Paid" + 12-Digit UTR)</div>
+                  <div style="font-size:11px; color:var(--text-muted); margin-top:2px;">Enables customer to input their 12-digit UTR with instant anti-replay & real-time bank ledger cross-check</div>
+                </div>
+              </div>
+              <div style="display:flex; align-items:center; gap:14px;" onclick="event.stopPropagation();">
+                <span class="pill" id="modstatus-manual_utr">ACTIVE</span>
+                <label class="switch">
+                  <input type="checkbox" id="modswitch-manual_utr" onchange="handleModuleToggle('manual_utr', this.checked)">
+                  <span class="slider"></span>
+                </label>
+              </div>
+            </div>
+            <div class="module-drawer" id="moddrawer-manual_utr">
+              <div class="checklist-box">
+                <div class="checklist-title"><span>📋</span> Step-by-Step Setup Checklist (Things To Do)</div>
+                <div class="checklist-item"><span class="num">1</span><span>Choose your verification strictness: Instant Optimistic Settlement or Smart Polling Hold (Zero-Trust).</span></div>
+                <div class="checklist-item"><span class="num">2</span><span>Set customer retry timeout window (default: 120 seconds) and maximum submission attempts per order.</span></div>
+                <div class="checklist-item"><span class="num">3</span><span>Customize the instructional prompt shown to the customer inside the checkout drawer.</span></div>
+              </div>
+
+              <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(280px, 1fr)); gap:16px; margin-bottom:16px;">
+                <div class="form-group">
+                  <label class="form-label">Verification Strictness Fallback</label>
+                  <select id="cfg-manual_utr-verification_strictness" class="form-input">
+                    <option value="OPTIMISTIC_ANTI_REPLAY">Optimistic Instant Approval (Settles immediately with strict Anti-Replay audit)</option>
+                    <option value="SMART_POLLING_HOLD">Smart Polling Hold (Zero-Trust: Holds in UTR_SUBMITTED until bank ledger matches)</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Retry Window (Seconds)</label>
+                  <input type="number" id="cfg-manual_utr-retry_window_seconds" class="form-input" value="120" />
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Max Attempts Allowed</label>
+                  <input type="number" id="cfg-manual_utr-max_attempts" class="form-input" value="3" />
+                </div>
+              </div>
+
+              <div class="form-group" style="margin-bottom:18px;">
+                <label class="form-label">Customer Instructional Prompt Text</label>
+                <input type="text" id="cfg-manual_utr-customer_prompt_text" class="form-input" value="Enter your 12-digit UPI Transaction ID / UTR from your payment app" />
+              </div>
+
+              <div style="display:flex; gap:10px;">
+                <button class="btn btn-primary" onclick="saveModuleConfig('manual_utr')">Save & Activate Module</button>
+                <button class="btn btn-secondary" onclick="testModule('manual_utr')">Test Module</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- MODULE 4: Android Push / SMS Observer & ADB Tunnel -->
+          <div class="module-card" id="modcard-android_observer">
+            <div class="module-head" onclick="toggleModuleDrawer('android_observer')">
+              <div class="module-info">
+                <div class="module-icon">📶</div>
+                <div>
+                  <div style="font-size:14px; font-weight:700;">Module 4: Android Push / SMS Observer & ADB Tunnel</div>
+                  <div style="font-size:11px; color:var(--text-muted); margin-top:2px;">Captures bank push notifications & SMS via paired Android phone over LAN or USB/Wi-Fi ADB reverse tunnel</div>
+                </div>
+              </div>
+              <div style="display:flex; align-items:center; gap:14px;" onclick="event.stopPropagation();">
+                <span class="pill" id="modstatus-android_observer">ACTIVE</span>
+                <label class="switch">
+                  <input type="checkbox" id="modswitch-android_observer" onchange="handleModuleToggle('android_observer', this.checked)">
+                  <span class="slider"></span>
+                </label>
+              </div>
+            </div>
+            <div class="module-drawer" id="moddrawer-android_observer">
+              <div class="checklist-box">
+                <div class="checklist-title"><span>📋</span> Step-by-Step Setup Checklist (Things To Do)</div>
+                <div class="checklist-item"><span class="num">1</span><span>Install the CraftLanee Observer APK onto your Android phone holding the business SIM / UPI App.</span></div>
+                <div class="checklist-item"><span class="num">2</span><span>Pair device with your Secret Token or scan the Pairing QR code.</span></div>
+                <div class="checklist-item"><span class="num">3</span><span>Enable ADB reverse tunnel for zero-latency localhost forwarding: <code class="mono" style="color:#38bdf8;">adb reverse tcp:7000 tcp:7000</code>.</span></div>
+                <div class="checklist-item"><span class="num">4</span><span>Grant Notification & SMS Reader permissions in Android Settings.</span></div>
+              </div>
+
+              <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(280px, 1fr)); gap:16px; margin-bottom:16px;">
+                <div class="form-group">
+                  <label class="form-label">Observer Device Secret</label>
+                  <div style="display:flex; gap:8px;">
+                    <input type="password" id="cfg-android_observer-observer_secret" class="form-input mono" value="cl_obs_sec_master" />
+                    <button class="btn btn-secondary" type="button" onclick="toggleReveal('cfg-android_observer-observer_secret')">👁</button>
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Allowed Bank Sender Regex</label>
+                  <input type="text" id="cfg-android_observer-allowed_sender_regex" class="form-input mono" value="SBIUPI|HDFCBK|ICICI|AXISBK|PAYTM|CENTBK" />
+                </div>
+                <div class="form-group">
+                  <label class="form-label">ADB Reverse Tunnel Command</label>
+                  <input type="text" id="cfg-android_observer-adb_tunnel_command" class="form-input mono" value="adb reverse tcp:7000 tcp:7000" readonly />
+                </div>
+              </div>
+
+              <div style="display:flex; gap:10px;">
+                <button class="btn btn-primary" onclick="saveModuleConfig('android_observer')">Save & Activate Module</button>
+                <button class="btn btn-secondary" onclick="testModule('android_observer')">Send Test Ping to Device</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- MODULE 5: Developer Sandbox Simulator -->
+          <div class="module-card" id="modcard-sandbox_simulator">
+            <div class="module-head" onclick="toggleModuleDrawer('sandbox_simulator')">
+              <div class="module-info">
+                <div class="module-icon">🧪</div>
+                <div>
+                  <div style="font-size:14px; font-weight:700;">Module 5: Developer Sandbox Simulator</div>
+                  <div style="font-size:11px; color:var(--text-muted); margin-top:2px;">1-click simulated credit settlement for development and automated tests without moving real money</div>
+                </div>
+              </div>
+              <div style="display:flex; align-items:center; gap:14px;" onclick="event.stopPropagation();">
+                <span class="pill" id="modstatus-sandbox_simulator">ACTIVE</span>
+                <label class="switch">
+                  <input type="checkbox" id="modswitch-sandbox_simulator" onchange="handleModuleToggle('sandbox_simulator', this.checked)">
+                  <span class="slider"></span>
+                </label>
+              </div>
+            </div>
+            <div class="module-drawer" id="moddrawer-sandbox_simulator">
+              <div class="checklist-box">
+                <div class="checklist-title"><span>📋</span> Step-by-Step Setup Checklist (Things To Do)</div>
+                <div class="checklist-item"><span class="num">1</span><span>Toggle ON during development, staging, or automated test pipelines.</span></div>
+                <div class="checklist-item"><span class="num">2</span><span>Toggle OFF in production so test buttons are never rendered in client checkouts.</span></div>
+                <div class="checklist-item"><span class="num">3</span><span>Configure optional auto-settle delay in seconds to simulate realistic bank latencies.</span></div>
+              </div>
+
+              <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(280px, 1fr)); gap:16px; margin-bottom:16px;">
+                <div class="form-group">
+                  <label class="form-label">Auto-Settle Simulated Delay (Seconds)</label>
+                  <input type="number" id="cfg-sandbox_simulator-auto_settle_delay_seconds" class="form-input" value="0" min="0" max="60" />
+                </div>
+                <div class="form-group" style="display:flex; align-items:center; padding-top:24px;">
+                  <label style="font-size:12px; display:flex; align-items:center; gap:6px; cursor:pointer;">
+                    <input type="checkbox" id="cfg-sandbox_simulator-allow_custom_utr" checked>
+                    <span>Allow entering custom simulated UTR in test modal</span>
+                  </label>
+                </div>
+              </div>
+
+              <div style="display:flex; gap:10px;">
+                <button class="btn btn-primary" onclick="saveModuleConfig('sandbox_simulator')">Save & Activate Module</button>
+                <button class="btn btn-secondary" onclick="testModule('sandbox_simulator')">Test Module</button>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- ── TAB 3: LIVE CHECKOUT STUDIO (THEME & UI CUSTOMIZER) ────────────────── -->
+    <section id="tab-studio" class="tab-content" style="display:none;">
+      <div class="bento-card">
+        <div class="card-head">
+          <h2><span>🎨</span> Checkout Customizer Studio & Live Interactive Preview</h2>
+          <button class="btn btn-primary btn-sm" onclick="saveCustomization()">💾 Save Customization</button>
+        </div>
+        <div class="card-body">
+          <p style="font-size:12px; color:var(--text-muted); margin-bottom:20px;">
+            Customize your customer-facing checkout modal. Changes reflect in real-time on the live preview card on the right and persist directly to SQLite for all newly initialized checkout sessions.
+          </p>
+
+          <div class="studio-grid">
+            <!-- Left Controls Form -->
+            <div>
+              <!-- 1-Click Themes -->
+              <div style="margin-bottom:22px;">
+                <label class="form-label">1-Click Theme Presets</label>
+                <div class="theme-presets">
+                  <button type="button" class="theme-preset-btn" onclick="applyPresetTheme('obsidian')">
+                    <span style="display:inline-block; width:10px; height:10px; background:#10b981; border-radius:50%; margin-right:4px;"></span>
+                    Obsidian Dark
+                  </button>
+                  <button type="button" class="theme-preset-btn" onclick="applyPresetTheme('dotmatrix')">
+                    <span style="display:inline-block; width:10px; height:10px; background:#ef4444; border-radius:50%; margin-right:4px;"></span>
+                    Nothing Matrix
+                  </button>
+                  <button type="button" class="theme-preset-btn" onclick="applyPresetTheme('light')">
+                    <span style="display:inline-block; width:10px; height:10px; background:#0284c7; border-radius:50%; margin-right:4px;"></span>
+                    Clean Light
+                  </button>
+                  <button type="button" class="theme-preset-btn" onclick="applyPresetTheme('fintech')">
+                    <span style="display:inline-block; width:10px; height:10px; background:#8b5cf6; border-radius:50%; margin-right:4px;"></span>
+                    Emerald Fintech
+                  </button>
+                </div>
+              </div>
+
+              <!-- Brand Identity -->
+              <h3 style="font-size:13px; font-weight:700; margin-bottom:12px; color:var(--sky);">Brand Identity</h3>
+              <div style="display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-bottom:18px;">
+                <div class="form-group" style="margin:0;">
+                  <label class="form-label">Modal Display Title</label>
+                  <input type="text" id="studio-title" class="form-input" value="CraftLanee Secure Checkout" oninput="updateStudioPreview()" />
+                </div>
+                <div class="form-group" style="margin:0;">
+                  <label class="form-label">Subtitle / Description</label>
+                  <input type="text" id="studio-subtitle" class="form-input" value="Instant 0% Fee UPI Payment" oninput="updateStudioPreview()" />
+                </div>
+              </div>
+
+              <div style="display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-bottom:24px;">
+                <div class="form-group" style="margin:0;">
+                  <label class="form-label">Merchant Logo URL (Optional)</label>
+                  <input type="text" id="studio-logo" class="form-input mono" placeholder="https://yourstore.com/logo.png" oninput="updateStudioPreview()" />
+                </div>
+                <div class="form-group" style="margin:0;">
+                  <label class="form-label">Security / Trust Badge Text</label>
+                  <input type="text" id="studio-trust" class="form-input" value="🔒 256-bit Encrypted · Direct Bank Settlement" oninput="updateStudioPreview()" />
+                </div>
+              </div>
+
+              <!-- Visual Styling -->
+              <h3 style="font-size:13px; font-weight:700; margin-bottom:12px; color:var(--emerald);">Visual Styling & Colors</h3>
+              <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(140px, 1fr)); gap:14px; margin-bottom:24px;">
+                <div class="form-group" style="margin:0;">
+                  <label class="form-label">Primary Accent</label>
+                  <div style="display:flex; gap:8px; align-items:center;">
+                    <input type="color" id="studio-color-accent" value="#10b981" style="width:36px; height:36px; border:none; background:none; cursor:pointer;" onchange="updateStudioPreview()" />
+                    <input type="text" id="studio-color-accent-text" class="form-input mono" value="#10b981" style="flex:1;" oninput="syncColorInput('accent', this.value)" />
+                  </div>
+                </div>
+                <div class="form-group" style="margin:0;">
+                  <label class="form-label">Background Color</label>
+                  <div style="display:flex; gap:8px; align-items:center;">
+                    <input type="color" id="studio-color-bg" value="#141414" style="width:36px; height:36px; border:none; background:none; cursor:pointer;" onchange="updateStudioPreview()" />
+                    <input type="text" id="studio-color-bg-text" class="form-input mono" value="#141414" style="flex:1;" oninput="syncColorInput('bg', this.value)" />
+                  </div>
+                </div>
+                <div class="form-group" style="margin:0;">
+                  <label class="form-label">Border Radius</label>
+                  <select id="studio-radius" class="form-input" onchange="updateStudioPreview()">
+                    <option value="4px">Sharp (4px)</option>
+                    <option value="10px">Subtle (10px)</option>
+                    <option value="16px" selected>Modern (16px)</option>
+                    <option value="24px">Pill / Soft (24px)</option>
+                  </select>
+                </div>
+                <div class="form-group" style="margin:0;">
+                  <label class="form-label">Font Family</label>
+                  <select id="studio-font" class="form-input" onchange="updateStudioPreview()">
+                    <option value="sans-serif">Inter / System Sans</option>
+                    <option value="ui-monospace, monospace">JetBrains Mono / Tech</option>
+                    <option value="Georgia, serif">Playfair / Luxury Serif</option>
+                  </select>
+                </div>
+              </div>
+
+              <!-- Component Visibility Toggles -->
+              <h3 style="font-size:13px; font-weight:700; margin-bottom:12px; color:var(--purple);">Component Visibility Toggles</h3>
+              <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:24px;">
+                <label style="font-size:12px; display:flex; align-items:center; gap:8px; cursor:pointer; background:#18181b; padding:10px 14px; border-radius:8px; border:1px solid var(--border);">
+                  <input type="checkbox" id="studio-toggle-qr" checked onchange="updateStudioPreview()">
+                  <span>Show UPI Dynamic QR Code</span>
+                </label>
+                <label style="font-size:12px; display:flex; align-items:center; gap:8px; cursor:pointer; background:#18181b; padding:10px 14px; border-radius:8px; border:1px solid var(--border);">
+                  <input type="checkbox" id="studio-toggle-intent" checked onchange="updateStudioPreview()">
+                  <span>Show Mobile UPI Intent Buttons</span>
+                </label>
+                <label style="font-size:12px; display:flex; align-items:center; gap:8px; cursor:pointer; background:#18181b; padding:10px 14px; border-radius:8px; border:1px solid var(--border);">
+                  <input type="checkbox" id="studio-toggle-timer" checked onchange="updateStudioPreview()">
+                  <span>Show Countdown Expiry Timer</span>
+                </label>
+                <label style="font-size:12px; display:flex; align-items:center; gap:8px; cursor:pointer; background:#18181b; padding:10px 14px; border-radius:8px; border:1px solid var(--border);">
+                  <input type="checkbox" id="studio-toggle-badge" checked onchange="updateStudioPreview()">
+                  <span>Show Order Reference Badge</span>
+                </label>
+              </div>
+
+              <div>
+                <button class="btn btn-primary" onclick="saveCustomization()">Save & Apply Globally</button>
+              </div>
+            </div>
+
+            <!-- Right Live Preview Card -->
+            <div class="preview-sticky">
+              <div style="font-size:11px; font-weight:700; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.8px; margin-bottom:14px;">
+                Live Interactive Checkout Preview
+              </div>
+              <div class="preview-modal" id="preview-modal-card">
+                <!-- Preview Header -->
+                <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:14px;">
+                  <div style="display:flex; align-items:center; gap:10px;">
+                    <div id="preview-logo-box" style="width:28px; height:28px; border-radius:6px; background:#10b981; display:flex; align-items:center; justify-content:center; font-weight:800; font-size:14px; color:#000;">⚡</div>
+                    <div>
+                      <div id="preview-title" style="font-size:13px; font-weight:700; color:#fff;">CraftLanee Secure Checkout</div>
+                      <div id="preview-subtitle" style="font-size:10px; color:#a1a1aa;">Instant 0% Fee UPI Payment</div>
+                    </div>
+                  </div>
+                  <div style="font-size:14px; color:#71717a; cursor:pointer;">✕</div>
+                </div>
+
+                <!-- Preview Amount & Timer -->
+                <div style="display:flex; align-items:baseline; justify-content:space-between; border-bottom:1px solid rgba(255,255,255,0.08); padding-bottom:10px; margin-bottom:14px;">
+                  <div>
+                    <div style="font-size:10px; color:#a1a1aa; text-transform:uppercase;">Amount to Pay</div>
+                    <div id="preview-amount" style="font-size:22px; font-weight:800; color:#fff;">₹499.00</div>
+                  </div>
+                  <div id="preview-timer-wrap" style="text-align:right;">
+                    <span style="font-size:10px; color:#f59e0b; background:rgba(245,158,11,0.15); padding:2px 6px; border-radius:10px; font-family:monospace;">⏱ 04:59</span>
+                  </div>
+                </div>
+
+                <!-- Preview QR Code Box -->
+                <div id="preview-qr-wrap" style="text-align:center; margin-bottom:14px;">
+                  <div style="background:#fff; border-radius:8px; padding:10px; display:inline-block;">
+                    <!-- Static preview SVG QR snippet -->
+                    <svg width="120" height="120" viewBox="0 0 120 120">
+                      <rect width="120" height="120" fill="#fff" />
+                      <rect x="10" y="10" width="30" height="30" fill="#000" />
+                      <rect x="80" y="10" width="30" height="30" fill="#000" />
+                      <rect x="10" y="80" width="30" height="30" fill="#000" />
+                      <rect x="16" y="16" width="18" height="18" fill="#fff" />
+                      <rect x="86" y="16" width="18" height="18" fill="#fff" />
+                      <rect x="16" y="86" width="18" height="18" fill="#fff" />
+                      <rect x="20" y="20" width="10" height="10" fill="#000" />
+                      <rect x="90" y="20" width="10" height="10" fill="#000" />
+                      <rect x="20" y="90" width="10" height="10" fill="#000" />
+                      <rect x="50" y="20" width="15" height="15" fill="#000" />
+                      <rect x="55" y="55" width="20" height="20" fill="#000" />
+                      <rect x="80" y="65" width="25" height="15" fill="#000" />
+                      <rect x="25" y="50" width="15" height="15" fill="#000" />
+                      <rect x="50" y="85" width="20" height="20" fill="#000" />
+                    </svg>
+                  </div>
+                  <div style="font-size:10px; color:#a1a1aa; margin-top:4px;">Scan with Any UPI App</div>
+                </div>
+
+                <!-- Preview Mobile UPI Intent Buttons -->
+                <div id="preview-intent-wrap" style="margin-bottom:14px;">
+                  <div style="font-size:10px; color:#a1a1aa; margin-bottom:6px; text-transform:uppercase;">Pay with UPI App</div>
+                  <div style="display:grid; grid-template-columns:1fr 1fr; gap:6px;">
+                    <div style="background:#222; border:1px solid #333; padding:7px; border-radius:6px; font-size:11px; text-align:center; color:#fff;">Google Pay</div>
+                    <div style="background:#222; border:1px solid #333; padding:7px; border-radius:6px; font-size:11px; text-align:center; color:#fff;">PhonePe</div>
+                    <div style="background:#222; border:1px solid #333; padding:7px; border-radius:6px; font-size:11px; text-align:center; color:#fff;">Paytm</div>
+                    <div style="background:#222; border:1px solid #333; padding:7px; border-radius:6px; font-size:11px; text-align:center; color:#fff;">BHIM UPI</div>
+                  </div>
+                </div>
+
+                <!-- Preview I Have Paid / Manual UTR Button -->
+                <button type="button" id="preview-btn-cta" style="width:100%; padding:9px; border-radius:8px; border:none; background:#10b981; color:#000; font-weight:700; font-size:12px; margin-bottom:10px; cursor:pointer;">
+                  I Have Paid · Enter 12-Digit UTR
+                </button>
+
+                <!-- Preview Trust Badge & Ref -->
+                <div style="text-align:center; font-size:10px; color:#71717a;" id="preview-trust-text">
+                  🔒 256-bit Encrypted · Direct Bank Settlement
+                </div>
+                <div id="preview-badge-wrap" style="text-align:center; margin-top:6px;">
+                  <span style="font-size:9px; font-family:monospace; background:#1e1e1e; padding:2px 6px; border-radius:4px; color:#a1a1aa;">Ref: cl_ord_demo99</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── TAB 4: UPI VPAS & CONCURRENCY CONFIGURATOR ──────────────────────────── -->
+    <section id="tab-concurrency" class="tab-content" style="display:none;">
+      <div class="bento-card">
+        <div class="card-head">
+          <h2><span>🏦</span> Multi-VPA Pool & Concurrency Engine (Engine 4)</h2>
+          <button class="btn btn-primary btn-sm" onclick="saveVpaConfig()">Save Settings</button>
+        </div>
+        <div class="card-body">
+          <h3 style="font-size:13px; font-weight:700; margin-bottom:12px;">Active UPI Receiving Addresses</h3>
+          <div class="table-wrap" style="margin-bottom:20px;">
+            <table>
+              <thead>
+                <tr>
+                  <th>UPI VPA ID</th>
+                  <th>Account Name</th>
+                  <th>Active Status</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="vpa-tbody">
+                <!-- Dynamically populated -->
+              </tbody>
+            </table>
+          </div>
+
+          <div style="background:#18181b; border:1px solid var(--border); border-radius:10px; padding:14px; margin-bottom:24px;">
+            <div style="font-size:12px; font-weight:700; margin-bottom:10px;">+ Add New UPI Receiving Address</div>
+            <div style="display:flex; gap:10px; flex-wrap:wrap;">
+              <input type="text" id="new-vpa-addr" class="form-input" style="flex:1; min-width:200px;" placeholder="e.g. craftlanee@icici" />
+              <input type="text" id="new-vpa-name" class="form-input" style="flex:1; min-width:200px;" placeholder="e.g. ICICI Current Account" />
+              <button class="btn btn-accent" onclick="addNewVpa()">Add to Pool</button>
+            </div>
+          </div>
+
+          <h3 style="font-size:13px; font-weight:700; margin-bottom:6px;">Concurrency Mode (Queue Bypass Engine)</h3>
+          <p style="font-size:12px; color:var(--text-muted); margin-bottom:12px;">
+            Controls how CraftLanee Pay handles multiple simultaneous users checking out for identical product prices:
+          </p>
+          <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(260px, 1fr)); gap:12px; margin-bottom:24px;">
+            <div style="background:#18181b; border:1px solid var(--border); border-radius:10px; padding:14px; cursor:pointer;" id="mode-paise-card" onclick="selectConcurrencyMode('PAISE_LOCK')">
+              <div style="font-size:13px; font-weight:700; margin-bottom:4px; display:flex; justify-content:space-between;">
+                <span>⚡ Dynamic Paise-Locking</span>
+                <span class="pill pill-success">Recommended</span>
+              </div>
+              <div style="font-size:11px; color:var(--text-muted); line-height:1.4;">
+                Locks micro-paise offsets (+₹0.01 to +₹0.99) uniquely per concurrent active checkout. Guarantees 50+ users can pay simultaneously without waiting in a queue.
+              </div>
+            </div>
+            <div style="background:#18181b; border:1px solid var(--border); border-radius:10px; padding:14px; cursor:pointer;" id="mode-vpa-card" onclick="selectConcurrencyMode('MULTI_VPA')">
+              <div style="font-size:13px; font-weight:700; margin-bottom:4px;">
+                <span>🔄 Multi-VPA Load Balancing</span>
+              </div>
+              <div style="font-size:11px; color:var(--text-muted); line-height:1.4;">
+                Rotates concurrent orders across multiple active UPI IDs in round-robin without modifying price paise.
+              </div>
+            </div>
+            <div style="background:#18181b; border:1px solid var(--border); border-radius:10px; padding:14px; cursor:pointer;" id="mode-fifo-card" onclick="selectConcurrencyMode('FIFO')">
+              <div style="font-size:13px; font-weight:700; margin-bottom:4px;">
+                <span>⏸ Single-Slot FIFO Queue</span>
+              </div>
+              <div style="font-size:11px; color:var(--text-muted); line-height:1.4;">
+                Queues concurrent orders on the same UPI ID for the same price. Users wait their turn.
+              </div>
+            </div>
+          </div>
+
+          <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(260px, 1fr)); gap:16px;">
+            <div class="form-group">
+              <label class="form-label">Amount Tolerance (₹)</label>
+              <input type="number" step="0.1" id="config-tolerance" class="form-input" value="1.00" />
+            </div>
+            <div class="form-group">
+              <label class="form-label">Late SMS Grace Window (Minutes)</label>
+              <input type="number" id="config-grace" class="form-input" value="30" />
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── TAB 5: API KEYS & WEBHOOK SECURITY CENTER ──────────────────────────── -->
+    <section id="tab-security" class="tab-content" style="display:none;">
+      <div class="bento-card">
+        <div class="card-head">
+          <h2><span>🔑</span> API Credentials & Webhook Security</h2>
+          <button class="btn btn-danger btn-sm" onclick="rotateKeys()">Rotate Keys</button>
+        </div>
+        <div class="card-body">
+          <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(320px, 1fr)); gap:16px; margin-bottom:24px;">
+            <div class="form-group">
+              <label class="form-label">Merchant Public Key (Browser Client SDK)</label>
+              <div style="display:flex; gap:8px;">
+                <input type="text" id="key-pub" readonly class="form-input mono" />
+                <button class="btn btn-secondary" onclick="copyToClipboard('key-pub')">Copy</button>
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Merchant Secret Key (Backend REST APIs)</label>
+              <div style="display:flex; gap:8px;">
+                <input type="password" id="key-sec" readonly class="form-input mono" />
+                <button class="btn btn-secondary" onclick="toggleReveal('key-sec')">👁</button>
+                <button class="btn btn-secondary" onclick="copyToClipboard('key-sec')">Copy</button>
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Webhook Signing Secret (HMAC-SHA256)</label>
+              <div style="display:flex; gap:8px;">
+                <input type="password" id="key-whsec" readonly class="form-input mono" />
+                <button class="btn btn-secondary" onclick="toggleReveal('key-whsec')">👁</button>
+                <button class="btn btn-secondary" onclick="copyToClipboard('key-whsec')">Copy</button>
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Admin Master Secret (Protected Admin APIs)</label>
+              <div style="display:flex; gap:8px;">
+                <input type="password" id="key-admin" class="form-input mono" value="cl_admin_sec_live_99a8b7c6d5e4" onchange="setAdminToken(this.value)" />
+                <button class="btn btn-secondary" onclick="toggleReveal('key-admin')">👁</button>
+                <button class="btn btn-secondary" onclick="copyToClipboard('key-admin')">Copy</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Automated Self-Test & Diagnostic Engine Card -->
+          <div style="background:#18181b; border:1px solid var(--border); border-radius:10px; padding:18px; margin-bottom:24px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; margin-bottom:12px;">
+              <div>
+                <h3 style="font-size:14px; font-weight:700; color:var(--text-bright); display:flex; align-items:center; gap:8px;">
+                  <span>🧪</span> 10-Point Automated Diagnostic & Security Test Suite
+                </h3>
+                <p style="font-size:12px; color:var(--text-muted); margin-top:2px;">
+                  Executes live integration & security tests against this instance (Toggles, Paise math, Observer HMAC, Intent, Scraper, UTR replay blocks, Sandbox lock, Expiry, Webhooks).
+                </p>
+              </div>
+              <button class="btn btn-primary" id="btn-run-self-test" onclick="runSelfTestSuite()" style="gap:6px;">
+                <span>▶</span> Run Diagnostic Suite
+              </button>
+            </div>
+            <div id="self-test-results-container" style="display:none; margin-top:16px;">
+              <div id="self-test-summary" style="padding:10px 14px; border-radius:8px; font-weight:600; font-size:13px; margin-bottom:12px;"></div>
+              <div id="self-test-list" style="display:flex; flex-direction:column; gap:8px;"></div>
+            </div>
+          </div>
+
+          <div style="background:#18181b; border:1px solid var(--border); border-radius:10px; padding:18px; margin-bottom:24px;">
+            <h3 style="font-size:13px; font-weight:700; margin-bottom:8px;">Webhook Endpoint Configuration</h3>
+            <div style="display:flex; gap:10px; margin-bottom:12px;">
+              <input type="url" id="webhook-target-url" class="form-input mono" placeholder="http://localhost:4000/webhook" />
+              <button class="btn btn-primary" onclick="saveWebhookUrl()">Save URL</button>
+              <button class="btn btn-accent" onclick="sendTestWebhook()">Send Signed Test</button>
+            </div>
+            <p style="font-size:11px; color:var(--text-muted);">
+              All outgoing webhooks are signed using HMAC-SHA256 in the <code class="mono">X-CraftLanee-Signature</code> and <code class="mono">X-YouPI-Signature</code> headers.
+            </p>
+          </div>
+
+          <h3 style="font-size:13px; font-weight:700; margin-bottom:12px;">Outgoing Webhook Delivery Logs</h3>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Status</th>
+                  <th>Order ID</th>
+                  <th>Target URL</th>
+                  <th>HMAC Signature</th>
+                  <th>Timestamp</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody id="webhook-logs-tbody">
+                <tr><td colspan="6" style="text-align:center; padding:16px; color:var(--text-muted);">No webhook logs recorded yet.</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── TAB 6: INTERACTIVE LIVE CHECKOUT SANDBOX ───────────────────────────── -->
+    <section id="tab-sandbox" class="tab-content" style="display:none;">
+      <div class="bento-card">
+        <div class="card-head">
+          <h2><span>🧪</span> Interactive Live Checkout Sandbox (Custom Amount Tester)</h2>
+        </div>
+        <div class="card-body">
+          <p style="font-size:12px; color:var(--text-muted); margin-bottom:16px;">
+            Test the full checkout flow end-to-end. Enter any custom INR amount, launch the checkout modal right on this page, and watch real-time DOM events and backend webhooks fire live!
+          </p>
+
+          <div style="display:flex; gap:12px; align-items:flex-end; max-width:600px; margin-bottom:24px; flex-wrap:wrap;">
+            <div class="form-group" style="margin:0; flex:1; min-width:180px;">
+              <label class="form-label">Custom Test Amount (₹)</label>
+              <input type="number" id="test-amount-input" class="form-input" value="499.00" min="1" max="100000" />
+            </div>
+            <div class="form-group" style="margin:0; min-width:160px;">
+              <label class="form-label">Mode</label>
+              <select id="test-mode-select" class="form-input">
+                <option value="sandbox">Sandbox Test Mode</option>
+                <option value="live">Live Real UPI Transfer</option>
+              </select>
+            </div>
+            <button class="btn btn-primary" style="height:38px; padding:0 18px;" onclick="launchTestCheckout()">
+              🚀 Launch Checkout
+            </button>
+          </div>
+
+          <!-- Real-Time Telemetry & Inspector -->
+          <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(320px, 1fr)); gap:16px;">
+            <!-- DOM Event Stream -->
+            <div style="background:#09090b; border:1px solid var(--border); border-radius:10px; padding:16px;">
+              <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:10px;">
+                <span style="font-size:12px; font-weight:700; color:var(--sky);">📡 Captured DOM Events</span>
+                <button class="btn btn-secondary btn-sm" onclick="clearEventLogs()">Clear</button>
+              </div>
+              <div id="dom-events-log" class="mono" style="height:260px; overflow-y:auto; font-size:11px; line-height:1.5; color:#a1a1aa;">
+                <div style="color:var(--text-dim);">Awaiting checkout events...</div>
+              </div>
+            </div>
+
+            <!-- Webhook Inspector -->
+            <div style="background:#09090b; border:1px solid var(--border); border-radius:10px; padding:16px;">
+              <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:10px;">
+                <span style="font-size:12px; font-weight:700; color:var(--emerald);">📬 Webhook Payload Inspector</span>
+                <span class="mono" style="font-size:10px; color:var(--text-dim);" id="wh-inspector-time">READY</span>
+              </div>
+              <div id="wh-inspector-body" class="mono" style="height:260px; overflow-y:auto; font-size:11px; line-height:1.5; color:#d4d4d8;">
+                <div style="color:var(--text-dim);">No webhook delivered yet. Complete a payment to view payload.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── TAB 7: UNIVERSAL INTEGRATION CODE GENERATOR ────────────────────────── -->
+    <section id="tab-integration" class="tab-content" style="display:none;">
+      <div class="bento-card">
+        <div class="card-head">
+          <h2><span>💻</span> Universal Integration SDK & Code Generator</h2>
+        </div>
+        <div class="card-body">
+          <p style="font-size:12px; color:var(--text-muted); margin-bottom:16px;">
+            Drop CraftLanee Pay into any frontend or backend stack with copy-paste snippets pre-populated with your live keys:
+          </p>
+
+          <!-- Integration Tabs -->
+          <div style="display:flex; gap:8px; margin-bottom:16px;">
+            <button class="btn btn-secondary btn-sm" onclick="showSnippet('snippet-html')">Drop-in HTML</button>
+            <button class="btn btn-secondary btn-sm" onclick="showSnippet('snippet-react')">React / Next.js</button>
+            <button class="btn btn-secondary btn-sm" onclick="showSnippet('snippet-node')">Node.js Server</button>
+            <button class="btn btn-secondary btn-sm" onclick="showSnippet('snippet-webhook')">Webhook Verification</button>
+          </div>
+
+          <div id="snippet-html" class="snippet-box">
+            <pre style="background:#09090b; border:1px solid var(--border); border-radius:8px; padding:16px; overflow-x:auto; font-size:12px; color:#e4e4e7;"><code class="mono">&lt;!-- 1. Include CraftLanee Pay SDK --&gt;
+&lt;script src="http://localhost:7000/craftlanee-pay.js"&gt;&lt;/script&gt;
+
+&lt;!-- 2. Declarative 1-Click Pay Button --&gt;
+&lt;button data-craftlanee-pay data-amount="499.00" data-name="Pro Subscription"&gt;
+  Pay ₹499 with UPI
+&lt;/button&gt;
+
+&lt;!-- 3. Or Programmatic Trigger --&gt;
+&lt;script&gt;
+  CraftLaneePay.pay({
+    amount: 499.00,
+    name: 'Pro Subscription',
+    handler: function(response) {
+      console.log('Payment Successful! UTR:', response.utr);
+    }
+  });
+&lt;/script&gt;</code></pre>
+          </div>
+
+          <div id="snippet-react" class="snippet-box" style="display:none;">
+            <pre style="background:#09090b; border:1px solid var(--border); border-radius:8px; padding:16px; overflow-x:auto; font-size:12px; color:#e4e4e7;"><code class="mono">import { useEffect } from 'react';
+
+export default function CheckoutButton({ amount = 499.00 }) {
+  useEffect(() => {
+    const script = document.createElement('script');
+    script.src = 'http://localhost:7000/craftlanee-pay.js';
+    script.async = true;
+    document.body.appendChild(script);
+  }, []);
+
+  const handlePay = () => {
+    window.CraftLaneePay.pay({
+      amount,
+      name: 'Order #1042',
+      handler: (response) => {
+        alert('Payment settled! UTR: ' + response.utr);
+      }
+    });
+  };
+
+  return (
+    &lt;button onClick={handlePay} className="pay-btn"&gt;
+      Pay ₹{amount} with UPI
+    &lt;/button&gt;
+  );
+}</code></pre>
+          </div>
+
+          <div id="snippet-node" class="snippet-box" style="display:none;">
+            <pre style="background:#09090b; border:1px solid var(--border); border-radius:8px; padding:16px; overflow-x:auto; font-size:12px; color:#e4e4e7;"><code class="mono">// Backend: Create Order & Lock Dynamic Paise
+import express from 'express';
+const app = express();
+
+app.post('/create-order', async (req, res) => {
+  const response = await fetch('http://localhost:7000/api/v1/orders', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      amount: 499.00,
+      customer: { name: 'Prajith', email: 'prajith@example.com' },
+      metadata: { cart_id: 'cart_8831' }
+    })
+  });
+  const data = await response.json();
+  res.json(data);
+});</code></pre>
+          </div>
+
+          <div id="snippet-webhook" class="snippet-box" style="display:none;">
+            <pre style="background:#09090b; border:1px solid var(--border); border-radius:8px; padding:16px; overflow-x:auto; font-size:12px; color:#e4e4e7;"><code class="mono">// Express Webhook Signature Verifier
+import crypto from 'node:crypto';
+
+app.post('/webhook', express.raw({ type: 'application/json' }), (req, res) => {
+  const signature = req.headers['x-craftlanee-signature'];
+  const secret = process.env.CRAFTLANEE_WEBHOOK_SECRET;
+
+  const hmac = crypto.createHmac('sha256', secret);
+  hmac.update(req.body);
+  const expected = 'sha256=' + hmac.digest('hex');
+
+  if (signature !== expected) {
+    return res.status(401).send('Invalid signature');
+  }
+
+  const event = JSON.parse(req.body.toString());
+  console.log('Verified Payment Settled Event:', event.order_id, event.utr);
+  res.status(200).send('OK');
+});</code></pre>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <div id="toast"></div>
+
+  <script>
+    // ── Admin Authentication Helpers ──────────────────────────────────────────
+    function getAdminToken() {
+      return localStorage.getItem('craftlanee_admin_token') || 'cl_admin_sec_live_99a8b7c6d5e4';
+    }
+
+    function setAdminToken(tok) {
+      const val = (tok || '').trim();
+      localStorage.setItem('craftlanee_admin_token', val);
+      const el = document.getElementById('key-admin');
+      if (el && el.value !== val) el.value = val;
+    }
+
+    async function adminFetch(url, options = {}) {
+      const opts = { ...options };
+      opts.headers = {
+        ...(options.headers || {}),
+        'X-Admin-Token': getAdminToken()
+      };
+      return fetch(url, opts);
+    }
+
+    // ── Global State ──────────────────────────────────────────────────────────
+    let dashboardData = {};
+    let activeModules = {};
+    let customizationData = {};
+
+    // ── Tab Switching ─────────────────────────────────────────────────────────
+    function switchTab(tabId) {
+      document.querySelectorAll('.tab-content').forEach(el => el.style.display = 'none');
+      document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+      const target = document.getElementById(tabId);
+      if (target) target.style.display = 'block';
+
+      const activeBtn = Array.from(document.querySelectorAll('.tab-btn')).find(b => b.getAttribute('onclick').includes(tabId));
+      if (activeBtn) activeBtn.classList.add('active');
+
+      if (tabId === 'tab-studio') {
+        updateStudioPreview();
+      }
+    }
+
+    // ── Toast Notification ────────────────────────────────────────────────────
+    function showToast(msg, isSuccess = true) {
+      const toast = document.getElementById('toast');
+      toast.textContent = (isSuccess ? '✓ ' : '⚠ ') + msg;
+      toast.style.borderColor = isSuccess ? 'var(--emerald)' : 'var(--red)';
+      toast.classList.add('show');
+      setTimeout(() => toast.classList.remove('show'), 3500);
+    }
+
+    // ── Data Fetching & Rendering ─────────────────────────────────────────────
+    async function fetchDashboardData() {
+      try {
+        const res = await fetch('/api/v1/dashboard/stats');
+        const data = await res.json();
+        dashboardData = data;
+        activeModules = data.modules || {};
+        customizationData = data.customization || {};
+
+        renderKpi(data.metrics);
+        renderOrders(data.orders || []);
+        renderUnclaimed(data.unclaimed_credits || []);
+        renderBankLedger(data.bank_ledger || []);
+        renderModules(data.modules || {});
+        renderCustomizationForm(customizationData);
+        renderVpas(data.config?.vpa_list || []);
+        renderSecurity(data.config || {});
+        renderWebhookLogs(data.webhook_logs || []);
+        updateStudioPreview();
+      } catch (err) {
+        console.error('Failed to fetch dashboard data:', err);
+      }
+    }
+
+    function renderKpi(m) {
+      if (!m) return;
+      document.getElementById('kpi-volume').textContent = '₹' + (m.total_volume || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 });
+      document.getElementById('kpi-volume-sub').textContent = `${m.total_orders || 0} total transactions`;
+      document.getElementById('kpi-active').textContent = m.active_sessions || 0;
+      document.getElementById('kpi-settled').textContent = m.settled_count || 0;
+      document.getElementById('kpi-latency').textContent = (m.avg_latency_ms || 780) + 'ms';
+
+      const obsDot = document.getElementById('kpi-obs-dot');
+      const obsStatus = document.getElementById('kpi-obs-status');
+      if (m.observer_online) {
+        obsDot.style.background = 'var(--emerald)';
+        obsStatus.textContent = 'ONLINE';
+        obsStatus.style.color = '#fff';
+      } else {
+        obsDot.style.background = 'var(--amber)';
+        obsStatus.textContent = 'STANDBY';
+        obsStatus.style.color = '#fbbf24';
+      }
+    }
+
+    function renderOrders(orders) {
+      const tbody = document.getElementById('orders-tbody');
+      if (!orders || orders.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="8" style="text-align:center; padding:20px; color:var(--text-muted);">No orders recorded yet. Create one via Sandbox or API.</td></tr>';
+        return;
+      }
+
+      tbody.innerHTML = orders.map(o => {
+        let pillClass = 'pill-dim';
+        if (o.status === 'SUCCESS') pillClass = 'pill-success';
+        else if (o.status === 'ACTIVE') pillClass = 'pill-sky';
+        else if (o.status === 'UTR_SUBMITTED') pillClass = 'pill-amber';
+        else if (o.status === 'SUSPICIOUS') pillClass = 'pill-danger';
+
+        const isActionable = (o.status === 'ACTIVE' || o.status === 'UTR_SUBMITTED' || o.status === 'PROCESSING');
+        const actionsHtml = isActionable ? `
+          <button class="btn btn-primary btn-sm" onclick="approveOrder('${o.order_id}')">Approve</button>
+          <button class="btn btn-secondary btn-sm" onclick="simulateOrderCredit('${o.order_id}')">Simulate</button>
+          <button class="btn btn-danger btn-sm" onclick="rejectOrder('${o.order_id}')">Flag</button>
+        ` : `<span style="color:var(--text-dim); font-size:11px;">Completed</span>`;
+
+        return `
+          <tr>
+            <td class="mono" style="font-weight:700;">${o.order_id}</td>
+            <td class="mono">
+              ₹${Number(o.amount_requested).toFixed(2)}
+              <span style="color:var(--emerald); font-size:11px;">(₹${Number(o.amount_locked).toFixed(2)})</span>
+            </td>
+            <td class="mono" style="font-size:11px; color:#38bdf8;">${o.vpa_assigned}</td>
+            <td><span class="pill ${pillClass}">${o.status}</span></td>
+            <td class="mono" style="font-size:11px;">${o.utr || '—'}</td>
+            <td style="font-size:11px; color:var(--text-muted);">${o.verification_method || '—'}</td>
+            <td style="font-size:11px; color:var(--text-dim);">${new Date(o.created_at).toLocaleTimeString()}</td>
+            <td><div style="display:flex; gap:6px;">${actionsHtml}</div></td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    function renderUnclaimed(unclaimed) {
+      const tbody = document.getElementById('unclaimed-tbody');
+      const countPill = document.getElementById('unclaimed-count-pill');
+      countPill.textContent = `${unclaimed.length} Unclaimed`;
+
+      if (!unclaimed || unclaimed.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding:16px; color:var(--text-muted);">No unclaimed bank credits in buffer.</td></tr>';
+        return;
+      }
+
+      tbody.innerHTML = unclaimed.map(u => `
+        <tr>
+          <td class="mono" style="font-weight:700; color:#fbbf24;">${u.utr}</td>
+          <td class="mono" style="font-weight:700;">₹${Number(u.amount).toFixed(2)}</td>
+          <td><span class="pill pill-dim">${u.raw_source}</span></td>
+          <td class="mono" style="font-size:11px; color:var(--text-dim);">${new Date(u.received_at).toLocaleTimeString()}</td>
+          <td>
+            <button class="btn btn-accent btn-sm" onclick="promptLinkUtr('${u.utr}')">Link to Order</button>
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    function renderBankLedger(credits) {
+      const tbody = document.getElementById('bank-ledger-tbody');
+      if (!credits || credits.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding:16px; color:var(--text-muted);">No statement credits synced yet. Click "Sync Statement Now" to pull latest.</td></tr>';
+        return;
+      }
+
+      tbody.innerHTML = credits.map(c => `
+        <tr>
+          <td class="mono" style="font-weight:700; color:#38bdf8;">${c.utr}</td>
+          <td class="mono" style="font-weight:700;">₹${Number(c.amount).toFixed(2)}</td>
+          <td class="mono" style="font-size:11px; color:var(--text-muted);">${c.payer_vpa || '—'}</td>
+          <td style="font-size:11px; color:var(--text-dim);">${c.raw_description || '—'}</td>
+          <td class="mono" style="font-size:11px;">${new Date(c.synced_at).toLocaleTimeString()}</td>
+          <td class="mono" style="font-size:11px; color:${c.matched_order_id ? '#34d399' : 'var(--text-dim)'};">${c.matched_order_id || 'UNMATCHED'}</td>
+        </tr>
+      `).join('');
+    }
+
+    // ── PLUG-AND-PLAY MODULES LOGIC ───────────────────────────────────────────
+    function renderModules(modules) {
+      for (const modId in modules) {
+        const mod = modules[modId];
+        const card = document.getElementById('modcard-' + modId);
+        const sw = document.getElementById('modswitch-' + modId);
+        const statusPill = document.getElementById('modstatus-' + modId);
+        const drawer = document.getElementById('moddrawer-' + modId);
+
+        if (!card || !sw) continue;
+
+        sw.checked = !!mod.enabled;
+        if (mod.enabled) {
+          card.classList.add('enabled');
+          statusPill.textContent = 'ACTIVE';
+          statusPill.className = 'pill pill-success';
+          drawer.classList.add('open');
+        } else {
+          card.classList.remove('enabled');
+          statusPill.textContent = 'DISABLED';
+          statusPill.className = 'pill pill-dim';
+          drawer.classList.remove('open');
+        }
+
+        // Populate fields
+        const cfg = mod.config || {};
+        for (const k in cfg) {
+          const el = document.getElementById(`cfg-${modId}-${k}`);
+          if (!el) continue;
+          if (el.type === 'checkbox') el.checked = !!cfg[k];
+          else el.value = cfg[k];
+        }
+      }
+    }
+
+    function toggleModuleDrawer(modId) {
+      const drawer = document.getElementById('moddrawer-' + modId);
+      if (drawer) drawer.classList.toggle('open');
+    }
+
+    async function handleModuleToggle(modId, enabled) {
+      try {
+        const res = await adminFetch(`/api/v1/modules/${modId}/toggle`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ enabled: enabled ? 1 : 0 })
+        });
+        const data = await res.json();
+        if (data.success) {
+          showToast(`Module ${modId} ${enabled ? 'ENABLED' : 'DISABLED'} successfully!`);
+          fetchDashboardData();
+        } else {
+          showToast(data.error || 'Failed to toggle module', false);
+        }
+      } catch (err) {
+        showToast('Error toggling module: ' + err.message, false);
+      }
+    }
+
+    async function saveModuleConfig(modId) {
+      const cfg = {};
+      const prefix = `cfg-${modId}-`;
+      document.querySelectorAll(`[id^="${prefix}"]`).forEach(el => {
+        const key = el.id.replace(prefix, '');
+        if (el.type === 'checkbox') cfg[key] = el.checked;
+        else if (el.type === 'number') cfg[key] = parseFloat(el.value);
+        else cfg[key] = el.value;
+      });
+
+      try {
+        const res = await adminFetch(`/api/v1/modules/${modId}/config`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ config: cfg })
+        });
+        const data = await res.json();
+        if (data.success) {
+          showToast(`Module ${modId} settings saved and activated!`);
+          fetchDashboardData();
+        } else {
+          showToast(data.error || 'Failed to save config', false);
+        }
+      } catch (err) {
+        showToast('Error saving module config: ' + err.message, false);
+      }
+    }
+
+    async function testModule(modId) {
+      try {
+        showToast(`Testing module ${modId}...`);
+        const res = await adminFetch(`/api/v1/modules/${modId}/test`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' }
+        });
+        const data = await res.json();
+        if (data.success) {
+          showToast(data.message || 'Module test passed!');
+          fetchDashboardData();
+        } else {
+          showToast(data.error || 'Module test failed', false);
+        }
+      } catch (err) {
+        showToast('Module test error: ' + err.message, false);
+      }
+    }
+
+    async function triggerBankSyncNow() {
+      try {
+        showToast('Syncing bank statement ledger...');
+        const res = await adminFetch('/api/v1/ledger/sync', { method: 'POST' });
+        const data = await res.json();
+        if (data.success) {
+          showToast(`Bank sync complete! Synced ${data.synced} credits.`);
+          fetchDashboardData();
+        } else {
+          showToast(data.error || 'Bank sync error', false);
+        }
+      } catch (err) {
+        showToast('Sync error: ' + err.message, false);
+      }
+    }
+
+    // ── CHECKOUT CUSTOMIZER STUDIO ────────────────────────────────────────────
+    function renderCustomizationForm(ui) {
+      if (!ui) return;
+      document.getElementById('studio-title').value = ui.display_title || 'CraftLanee Secure Checkout';
+      document.getElementById('studio-subtitle').value = ui.subtitle || 'Instant 0% Fee UPI Payment';
+      document.getElementById('studio-logo').value = ui.logo_url || '';
+      document.getElementById('studio-trust').value = ui.trust_badge || '🔒 256-bit Encrypted · Direct Bank Settlement';
+
+      document.getElementById('studio-color-accent').value = ui.primary_color || '#10b981';
+      document.getElementById('studio-color-accent-text').value = ui.primary_color || '#10b981';
+      document.getElementById('studio-color-bg').value = ui.bg_color || '#141414';
+      document.getElementById('studio-color-bg-text').value = ui.bg_color || '#141414';
+
+      document.getElementById('studio-radius').value = ui.border_radius || '16px';
+      document.getElementById('studio-font').value = ui.font_family || 'sans-serif';
+
+      document.getElementById('studio-toggle-qr').checked = ui.show_qr !== 0;
+      document.getElementById('studio-toggle-intent').checked = ui.show_intent_buttons !== 0;
+      document.getElementById('studio-toggle-timer').checked = ui.show_timer !== 0;
+      document.getElementById('studio-toggle-badge').checked = ui.show_order_badge !== 0;
+    }
+
+    function syncColorInput(type, val) {
+      if (type === 'accent') document.getElementById('studio-color-accent').value = val;
+      if (type === 'bg') document.getElementById('studio-color-bg').value = val;
+      updateStudioPreview();
+    }
+
+    function updateStudioPreview() {
+      const title = document.getElementById('studio-title')?.value || 'CraftLanee Secure Checkout';
+      const subtitle = document.getElementById('studio-subtitle')?.value || 'Instant 0% Fee UPI Payment';
+      const trust = document.getElementById('studio-trust')?.value || '🔒 256-bit Encrypted · Direct Bank Settlement';
+      const accent = document.getElementById('studio-color-accent')?.value || '#10b981';
+      const bg = document.getElementById('studio-color-bg')?.value || '#141414';
+      const radius = document.getElementById('studio-radius')?.value || '16px';
+      const font = document.getElementById('studio-font')?.value || 'sans-serif';
+
+      const showQr = document.getElementById('studio-toggle-qr')?.checked;
+      const showIntent = document.getElementById('studio-toggle-intent')?.checked;
+      const showTimer = document.getElementById('studio-toggle-timer')?.checked;
+      const showBadge = document.getElementById('studio-toggle-badge')?.checked;
+
+      const card = document.getElementById('preview-modal-card');
+      if (!card) return;
+
+      card.style.background = bg;
+      card.style.borderRadius = radius;
+      card.style.fontFamily = font;
+
+      document.getElementById('preview-title').textContent = title;
+      document.getElementById('preview-subtitle').textContent = subtitle;
+      document.getElementById('preview-trust-text').textContent = trust;
+
+      const ctaBtn = document.getElementById('preview-btn-cta');
+      if (ctaBtn) {
+        ctaBtn.style.background = accent;
+        ctaBtn.style.borderRadius = `calc(${radius} * 0.5)`;
+      }
+
+      const logoBox = document.getElementById('preview-logo-box');
+      if (logoBox) logoBox.style.background = accent;
+
+      document.getElementById('preview-qr-wrap').style.display = showQr ? 'block' : 'none';
+      document.getElementById('preview-intent-wrap').style.display = showIntent ? 'block' : 'none';
+      document.getElementById('preview-timer-wrap').style.display = showTimer ? 'block' : 'none';
+      document.getElementById('preview-badge-wrap').style.display = showBadge ? 'block' : 'none';
+    }
+
+    function applyPresetTheme(theme) {
+      if (theme === 'obsidian') {
+        document.getElementById('studio-color-accent').value = '#10b981';
+        document.getElementById('studio-color-accent-text').value = '#10b981';
+        document.getElementById('studio-color-bg').value = '#141414';
+        document.getElementById('studio-color-bg-text').value = '#141414';
+        document.getElementById('studio-radius').value = '16px';
+        document.getElementById('studio-font').value = 'sans-serif';
+      } else if (theme === 'dotmatrix') {
+        document.getElementById('studio-color-accent').value = '#ef4444';
+        document.getElementById('studio-color-accent-text').value = '#ef4444';
+        document.getElementById('studio-color-bg').value = '#000000';
+        document.getElementById('studio-color-bg-text').value = '#000000';
+        document.getElementById('studio-radius').value = '4px';
+        document.getElementById('studio-font').value = 'ui-monospace, monospace';
+      } else if (theme === 'light') {
+        document.getElementById('studio-color-accent').value = '#0284c7';
+        document.getElementById('studio-color-accent-text').value = '#0284c7';
+        document.getElementById('studio-color-bg').value = '#ffffff';
+        document.getElementById('studio-color-bg-text').value = '#ffffff';
+        document.getElementById('studio-radius').value = '12px';
+        document.getElementById('studio-font').value = 'sans-serif';
+      } else if (theme === 'fintech') {
+        document.getElementById('studio-color-accent').value = '#8b5cf6';
+        document.getElementById('studio-color-accent-text').value = '#8b5cf6';
+        document.getElementById('studio-color-bg').value = '#0f172a';
+        document.getElementById('studio-color-bg-text').value = '#0f172a';
+        document.getElementById('studio-radius').value = '20px';
+        document.getElementById('studio-font').value = 'sans-serif';
+      }
+      updateStudioPreview();
+      showToast(`Applied ${theme} theme preset! Click Save to persist.`);
+    }
+
+    async function saveCustomization() {
+      const payload = {
+        display_title: document.getElementById('studio-title').value,
+        subtitle: document.getElementById('studio-subtitle').value,
+        logo_url: document.getElementById('studio-logo').value,
+        trust_badge: document.getElementById('studio-trust').value,
+        primary_color: document.getElementById('studio-color-accent').value,
+        bg_color: document.getElementById('studio-color-bg').value,
+        border_radius: document.getElementById('studio-radius').value,
+        font_family: document.getElementById('studio-font').value,
+        show_qr: document.getElementById('studio-toggle-qr').checked ? 1 : 0,
+        show_intent_buttons: document.getElementById('studio-toggle-intent').checked ? 1 : 0,
+        show_timer: document.getElementById('studio-toggle-timer').checked ? 1 : 0,
+        show_order_badge: document.getElementById('studio-toggle-badge').checked ? 1 : 0
+      };
+
+      try {
+        const res = await adminFetch('/api/v1/customization', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        const data = await res.json();
+        if (data.success) {
+          showToast('Checkout Studio customization saved globally to SQLite!');
+          fetchDashboardData();
+        } else {
+          showToast(data.error || 'Failed to save customization', false);
+        }
+      } catch (err) {
+        showToast('Error saving customization: ' + err.message, false);
+      }
+    }
+
+    // ── VPA & CONCURRENCY CONFIG ──────────────────────────────────────────────
+    function renderVpas(vpaList) {
+      const tbody = document.getElementById('vpa-tbody');
+      if (!vpaList || vpaList.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; padding:16px; color:var(--text-muted);">No VPAs configured. Add one below.</td></tr>';
+        return;
+      }
+
+      tbody.innerHTML = vpaList.map((v, i) => `
+        <tr>
+          <td class="mono" style="font-weight:700; color:#38bdf8;">${v.vpa}</td>
+          <td>${v.name}</td>
+          <td>
+            <label class="switch">
+              <input type="checkbox" ${v.active ? 'checked' : ''} onchange="toggleVpaActive(${i}, this.checked)">
+              <span class="slider"></span>
+            </label>
+          </td>
+          <td>
+            <button class="btn btn-danger btn-sm" onclick="removeVpa(${i})">Remove</button>
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    function toggleVpaActive(idx, active) {
+      const list = dashboardData.config?.vpa_list || [];
+      if (list[idx]) list[idx].active = active;
+      saveVpaConfigDirect(list);
+    }
+
+    function removeVpa(idx) {
+      const list = dashboardData.config?.vpa_list || [];
+      list.splice(idx, 1);
+      saveVpaConfigDirect(list);
+    }
+
+    function addNewVpa() {
+      const addr = document.getElementById('new-vpa-addr').value.trim();
+      const name = document.getElementById('new-vpa-name').value.trim();
+      if (!addr || !name) {
+        alert('Please enter both VPA address and Account name');
+        return;
+      }
+      const list = dashboardData.config?.vpa_list || [];
+      list.push({ id: 'vpa_' + Date.now(), vpa: addr, name, active: true, weight: 1 });
+      document.getElementById('new-vpa-addr').value = '';
+      document.getElementById('new-vpa-name').value = '';
+      saveVpaConfigDirect(list);
+    }
+
+    function selectConcurrencyMode(mode) {
+      ['mode-paise-card', 'mode-vpa-card', 'mode-fifo-card'].forEach(id => {
+        document.getElementById(id).style.borderColor = 'var(--border)';
+        document.getElementById(id).style.background = '#18181b';
+      });
+      if (mode === 'PAISE_LOCK') {
+        document.getElementById('mode-paise-card').style.borderColor = 'var(--emerald)';
+        document.getElementById('mode-paise-card').style.background = '#13241b';
+      } else if (mode === 'MULTI_VPA') {
+        document.getElementById('mode-vpa-card').style.borderColor = 'var(--emerald)';
+        document.getElementById('mode-vpa-card').style.background = '#13241b';
+      } else {
+        document.getElementById('mode-fifo-card').style.borderColor = 'var(--emerald)';
+        document.getElementById('mode-fifo-card').style.background = '#13241b';
+      }
+      window.__chosenConcurrencyMode = mode;
+    }
+
+    async function saveVpaConfigDirect(list) {
+      const rules = dashboardData.config?.edge_case_rules || {};
+      rules.concurrency_mode = window.__chosenConcurrencyMode || rules.concurrency_mode || 'PAISE_LOCK';
+      rules.amount_tolerance = parseFloat(document.getElementById('config-tolerance').value || '1.0');
+      rules.late_sms_grace_minutes = parseInt(document.getElementById('config-grace').value || '30', 10);
+
+      try {
+        const res = await adminFetch('/api/v1/dashboard/config', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ vpa_list: list, edge_case_rules: rules })
+        });
+        const data = await res.json();
+        if (data.success) {
+          showToast('VPA pool & concurrency settings saved!');
+          fetchDashboardData();
+        }
+      } catch (err) {
+        showToast('Error saving VPA config: ' + err.message, false);
+      }
+    }
+
+    function saveVpaConfig() {
+      const list = dashboardData.config?.vpa_list || [];
+      saveVpaConfigDirect(list);
+    }
+
+    // ── SECURITY & WEBHOOKS ───────────────────────────────────────────────────
+    function renderSecurity(cfg) {
+      document.getElementById('key-pub').value = cfg.public_key || '';
+      document.getElementById('key-sec').value = cfg.secret_key || '';
+      document.getElementById('key-whsec').value = cfg.webhook_secret || '';
+      document.getElementById('webhook-target-url').value = cfg.webhook_url || '';
+      const adminEl = document.getElementById('key-admin');
+      if (adminEl) adminEl.value = getAdminToken();
+    }
+
+    function toggleReveal(id) {
+      const el = document.getElementById(id);
+      el.type = el.type === 'password' ? 'text' : 'password';
+    }
+
+    function copyToClipboard(id) {
+      const el = document.getElementById(id);
+      navigator.clipboard.writeText(el.value);
+      showToast('Copied to clipboard!');
+    }
+
+    async function rotateKeys() {
+      if (!confirm('Are you sure you want to rotate all API and Webhook keys? Existing SDK integrations must be updated.')) return;
+      try {
+        const res = await adminFetch('/api/v1/dashboard/keys/rotate', { method: 'POST' });
+        const data = await res.json();
+        if (data.success) {
+          showToast('Keys rotated successfully!');
+          fetchDashboardData();
+        }
+      } catch (err) {
+        showToast('Key rotation failed', false);
+      }
+    }
+
+    async function saveWebhookUrl() {
+      const url = document.getElementById('webhook-target-url').value.trim();
+      try {
+        const res = await adminFetch('/api/v1/dashboard/config', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ webhook_url: url })
+        });
+        const data = await res.json();
+        if (data.success) {
+          showToast('Webhook destination URL updated!');
+          fetchDashboardData();
+        }
+      } catch (err) {
+        showToast('Error updating webhook URL', false);
+      }
+    }
+
+    async function sendTestWebhook() {
+      try {
+        showToast('Sending signed test webhook...');
+        const res = await adminFetch('/api/v1/dashboard/webhook/test', { method: 'POST' });
+        const data = await res.json();
+        if (data.success) {
+          showToast('Signed test webhook dispatched!');
+          fetchDashboardData();
+        }
+      } catch (err) {
+        showToast('Error dispatching test webhook', false);
+      }
+    }
+
+    async function runSelfTestSuite() {
+      const btn = document.getElementById('btn-run-self-test');
+      const container = document.getElementById('self-test-results-container');
+      const summary = document.getElementById('self-test-summary');
+      const list = document.getElementById('self-test-list');
+
+      switchTab('tab-security');
+
+      if (btn) btn.disabled = true;
+      if (container) {
+        container.style.display = 'block';
+        summary.className = 'pill-amber';
+        summary.innerHTML = '⚡ Running 10-point automated diagnostic & security suite... please wait (1-2s)';
+        list.innerHTML = '<div style="padding:12px; color:var(--text-muted); font-size:12px;">Executing live tests against SQLite and gateway engine...</div>';
+      }
+      showToast('Running 10-Point Automated Test Suite...');
+
+      try {
+        const res = await adminFetch('/api/v1/admin/self-test');
+        const data = await res.json();
+
+        if (container) {
+          if (data.allPassed) {
+            summary.style.background = 'rgba(16, 185, 129, 0.15)';
+            summary.style.color = '#34d399';
+            summary.style.border = '1px solid rgba(16, 185, 129, 0.3)';
+            summary.innerHTML = `✓ ALL TESTS PASSED: ${data.passed}/${data.total} features verified successfully! (100% PASS RATE)`;
+            showToast('All 10 tests PASSED with 100% success!');
+          } else {
+            summary.style.background = 'rgba(239, 68, 68, 0.15)';
+            summary.style.color = '#f87171';
+            summary.style.border = '1px solid rgba(239, 68, 68, 0.3)';
+            summary.innerHTML = `⚠ TEST SUITE ISSUES: ${data.passed}/${data.total} passed, ${data.failed} failed.`;
+            showToast(`${data.failed} test(s) failed`, false);
+          }
+
+          list.innerHTML = (data.tests || []).map(t => {
+            const isPass = t.status === 'PASS';
+            const badge = isPass
+              ? '<span class="pill pill-success" style="font-size:10px;">PASS</span>'
+              : '<span class="pill pill-danger" style="font-size:10px;">FAIL</span>';
+            return `
+              <div style="background:#121214; border:1px solid var(--border); border-radius:6px; padding:10px 14px; display:flex; justify-content:space-between; align-items:center; gap:12px;">
+                <div>
+                  <div style="font-size:12px; font-weight:600; color:var(--text-bright); margin-bottom:2px;">${escapeHtml(t.name)}</div>
+                  <div style="font-size:11px; color:var(--text-muted); font-family:var(--font-mono);">${escapeHtml(t.details || '')}</div>
+                </div>
+                <div>${badge}</div>
+              </div>
+            `;
+          }).join('');
+        }
+        fetchDashboardData();
+      } catch (err) {
+        if (summary) {
+          summary.style.background = 'rgba(239, 68, 68, 0.15)';
+          summary.style.color = '#f87171';
+          summary.innerHTML = `Diagnostic error: ${escapeHtml(err.message)}`;
+        }
+        showToast('Self-test request error: ' + err.message, false);
+      } finally {
+        if (btn) btn.disabled = false;
+      }
+    }
+
+    function renderWebhookLogs(logs) {
+      const tbody = document.getElementById('webhook-logs-tbody');
+      if (!logs || logs.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding:16px; color:var(--text-muted);">No webhook logs recorded yet.</td></tr>';
+        return;
+      }
+
+      tbody.innerHTML = logs.map(l => {
+        const isOk = l.http_status >= 200 && l.http_status < 300;
+        return `
+          <tr>
+            <td><span class="pill ${isOk ? 'pill-success' : 'pill-danger'}">${l.http_status || 'FAILED'}</span></td>
+            <td class="mono" style="font-size:11px;">${l.order_id}</td>
+            <td class="mono" style="font-size:11px; color:#38bdf8;">${l.url}</td>
+            <td class="mono" style="font-size:10px; color:var(--text-muted);">${(l.signature || '').slice(0, 20)}...</td>
+            <td class="mono" style="font-size:11px;">${new Date(l.created_at).toLocaleTimeString()}</td>
+            <td><button class="btn btn-secondary btn-sm" onclick="inspectPayload('${l.order_id}')">View Payload</button></td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    function inspectPayload(orderId) {
+      const logs = dashboardData.webhook_logs || [];
+      const log = logs.find(l => l.order_id === orderId);
+      if (log) {
+        switchTab('tab-sandbox');
+        document.getElementById('wh-inspector-time').textContent = new Date(log.created_at).toLocaleTimeString();
+        document.getElementById('wh-inspector-body').innerHTML = `<pre style="margin:0; color:#34d399;">${escapeHtml(log.payload)}</pre>`;
+      }
+    }
+
+    // ── TILL 1-CLICK ACTIONS ──────────────────────────────────────────────────
+    async function approveOrder(orderId) {
+      try {
+        const res = await adminFetch(`/api/v1/orders/${orderId}/approve`, { method: 'POST' });
+        const data = await res.json();
+        if (data.success) {
+          showToast(`Order ${orderId} approved manually!`);
+          fetchDashboardData();
+        }
+      } catch (err) {
+        showToast('Approval error: ' + err.message, false);
+      }
+    }
+
+    async function simulateOrderCredit(orderId) {
+      try {
+        const res = await adminFetch('/api/v1/sandbox/simulate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ order_id: orderId })
+        });
+        const data = await res.json();
+        if (data.success) {
+          showToast(`Simulated credit settled for ${orderId}!`);
+          fetchDashboardData();
+        }
+      } catch (err) {
+        showToast('Simulate error: ' + err.message, false);
+      }
+    }
+
+    async function rejectOrder(orderId) {
+      try {
+        const res = await adminFetch(`/api/v1/orders/${orderId}/reject`, { method: 'POST' });
+        const data = await res.json();
+        if (data.success) {
+          showToast(`Order ${orderId} flagged as SUSPICIOUS`);
+          fetchDashboardData();
+        }
+      } catch (err) {
+        showToast('Flag error: ' + err.message, false);
+      }
+    }
+
+    function promptLinkUtr(utr) {
+      const orderId = prompt(`Enter Order ID to match with UTR ${utr}:`);
+      if (!orderId) return;
+      linkUtrToOrder(utr, orderId.trim());
+    }
+
+    async function linkUtrToOrder(utr, orderId) {
+      try {
+        const res = await adminFetch('/api/v1/dashboard/unclaimed/link', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ utr, order_id: orderId })
+        });
+        const data = await res.json();
+        if (data.success) {
+          showToast(`UTR ${utr} matched to ${orderId}!`);
+          fetchDashboardData();
+        } else {
+          showToast(data.error || 'Failed to link UTR', false);
+        }
+      } catch (err) {
+        showToast('Linking error: ' + err.message, false);
+      }
+    }
+
+    // ── LIVE SANDBOX TESTER ───────────────────────────────────────────────────
+    function launchTestCheckout() {
+      const amount = parseFloat(document.getElementById('test-amount-input').value || '499.00');
+      const isSandbox = document.getElementById('test-mode-select').value === 'sandbox';
+
+      logDomEvent('initiating_checkout', { amount, sandbox: isSandbox });
+
+      window.CraftLaneePay.pay({
+        amount,
+        name: 'Sandbox Demo Product',
+        sandbox: isSandbox,
+        handler: (res) => {
+          logDomEvent('payment_success_callback', res);
+          showToast(`Payment successful! UTR: ${res.utr}`);
+          fetchDashboardData();
+        },
+        onClose: () => {
+          logDomEvent('checkout_modal_closed', {});
+        }
+      });
+    }
+
+    function logDomEvent(name, data) {
+      const log = document.getElementById('dom-events-log');
+      const time = new Date().toLocaleTimeString();
+      const div = document.createElement('div');
+      div.style.marginBottom = '6px';
+      div.innerHTML = `<span style="color:#38bdf8;">[${time}]</span> <strong style="color:#e4e4e7;">${name}</strong>: <span style="color:#10b981;">${JSON.stringify(data)}</span>`;
+      log.prepend(div);
+    }
+
+    function clearEventLogs() {
+      document.getElementById('dom-events-log').innerHTML = '<div style="color:var(--text-dim);">Awaiting checkout events...</div>';
+    }
+
+    function showSnippet(id) {
+      document.querySelectorAll('.snippet-box').forEach(el => el.style.display = 'none');
+      document.getElementById(id).style.display = 'block';
+    }
+
+    function escapeHtml(str) {
+      return (str || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    }
+
+    // ── Real-Time SSE Listener ────────────────────────────────────────────────
+    function initSse() {
+      const es = new EventSource('/api/v1/dashboard/events');
+      es.onmessage = (event) => {
+        try {
+          const payload = JSON.parse(event.data);
+          if (payload.type === 'order_created' || payload.type === 'order_settled' || payload.type === 'order_updated') {
+            fetchDashboardData();
+          }
+        } catch (e) {}
+      };
+      es.onerror = () => {
+        setTimeout(initSse, 3000);
+      };
+    }
+
+    // Clock
+    setInterval(() => {
+      const clock = document.getElementById('clock-display');
+      if (clock) clock.textContent = new Date().toLocaleTimeString();
+    }, 1000);
+
+    // Initial load
+    document.addEventListener('DOMContentLoaded', () => {
+      fetchDashboardData();
+      initSse();
+      selectConcurrencyMode('PAISE_LOCK');
+    });
+  </script>
+</body>
+</html>

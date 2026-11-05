@@ -1,0 +1,23 @@
+{
+  "name": "craftlanee-pay",
+  "version": "2.5.0",
+  "type": "module",
+  "description": "CraftLanee Pay - Plug-and-Play Production UPI Payment Platform",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "test": "TEST_ENV=true node --test"
+  },
+  "keywords": [
+    "craftlanee",
+    "payment-gateway",
+    "upi",
+    "sqlite",
+    "observer"
+  ],
+  "author": "CraftLanee",
+  "license": "Commercial",
+  "dependencies": {
+    "express": "^5.3.0"
+  }
+}

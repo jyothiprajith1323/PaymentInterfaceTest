@@ -8,6 +8,10 @@ logs/
 npm-debug.log*
 
 # Databases and secrets
+*.db
+*.db-shm
+*.db-wal
+*.sqlite*
 data/*.sqlite*
 youpi-pg/data/*.sqlite*
 youpi-pg/data/.secrets/
